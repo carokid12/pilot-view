@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=7b80e627-917d-48d0-805a-1a9b02de6fee
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="What Should I Do?" />
+  <title>What Should I Do?</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #f5f2ee;
+      font-family: 'DM Sans', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px 60px;
+    }
+
+    h1 { font-size: 34px; font-weight: 700; letter-spacing: -1px; color: #1a1a1a; margin-bottom: 6px; text-align: center; }
+    .subtitle { color: #999; font-size: 15px; text-align: center; margin-bottom: 36px; }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+      width: 100%;
+      max-width: 760px;
+    }
+
+    .card { border-radius: 24px; padding: 28px 24px; display: flex; flex-direction: column; gap: 18px; }
+
+    .card-chores   { background: #eeeaf8; box-shadow: 0 8px 40px #6c63d422; border: 1.5px solid #6c63d433; }
+    .card-brain    { background: #eaf3f8; box-shadow: 0 8px 40px #3d9bc422; border: 1.5px solid #3d9bc433; }
+    .card-fun      { background: #f8eaee; box-shadow: 0 8px 40px #d46c8a22; border: 1.5px solid #d46c8a33; }
+    .card-outside  { background: #eaf8ed; box-shadow: 0 8px 40px #3dab5a22; border: 1.5px solid #3dab5a33; }
+    .card-exercise { background: #fff4e8; box-shadow: 0 8px 40px #e8943a22; border: 1.5px solid #e8943a33; }
+    .card-art      { background: #f5eaf8; box-shadow: 0 8px 40px #a63dc422; border: 1.5px solid #a63dc433; }
+
+    .card-header { display: flex; align-items: center; gap: 10px; }
+    .card-emoji { font-size: 26px; }
+    .card-title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+
+    .chores-text   { color: #3a3060; }
+    .brain-text    { color: #1a4a60; }
+    .fun-text      { color: #5c2035; }
+    .outside-text  { color: #1a4a28; }
+    .exercise-text { color: #6b3a0a; }
+    .art-text      { color: #4a1a60; }
+
+    .edit-btn { margin-left: auto; background: none; border-radius: 8px; padding: 4px 10px; font-size: 11px; cursor: pointer; font-family: inherit; font-weight: 600; white-space: nowrap; }
+    .edit-btn-chores   { border: 1.5px solid #6c63d455; color: #6c63d4; }
+    .edit-btn-brain    { border: 1.5px solid #3d9bc455; color: #3d9bc4; }
+    .edit-btn-fun      { border: 1.5px solid #d46c8a55; color: #d46c8a; }
+    .edit-btn-outside  { border: 1.5px solid #3dab5a55; color: #3dab5a; }
+    .edit-btn-exercise { border: 1.5px solid #e8943a55; color: #e8943a; }
+    .edit-btn-art      { border: 1.5px solid #a63dc455; color: #a63dc4; }
+
+    .list-editor { display: none; flex-direction: column; gap: 8px; }
+    .list-editor.open { display: flex; }
+
+    .add-row { display: flex; gap: 8px; }
+
+    .add-input { flex: 1; padding: 8px 12px; border-radius: 10px; background: rgba(255,255,255,0.6); font-family: inherit; font-size: 14px; color: #333; outline: none; }
+    .add-input-chores   { border: 1.5px solid #6c63d444; }
+    .add-input-brain    { border: 1.5px solid #3d9bc444; }
+    .add-input-fun      { border: 1.5px solid #d46c8a44; }
+    .add-input-outside  { border: 1.5px solid #3dab5a44; }
+    .add-input-exercise { border: 1.5px solid #e8943a44; }
+    .add-input-art      { border: 1.5px solid #a63dc444; }
+
+    .add-btn { color: #fff; border: none; border-radius: 10px; padding: 8px 14px; font-family: inherit; font-weight: 700; cursor: pointer; font-size: 16px; }
+    .add-btn-chores   { background: #6c63d4; }
+    .add-btn-brain    { background: #3d9bc4; }
+    .add-btn-fun      { background: #d46c8a; }
+    .add-btn-outside  { background: #3dab5a; }
+    .add-btn-exercise { background: #e8943a; }
+    .add-btn-art      { background: #a63dc4; }
+
+    .items-list { max-height: 160px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
+
+    .list-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.5); border-radius: 8px; padding: 6px 10px; font-size: 13px; color: #444; }
+
+    .remove-btn { background: none; border: none; color: #bbb; cursor: pointer; font-size: 18px; line-height: 1; padding: 0 4px; flex-shrink: 0; }
+
+    .pick-btn { color: #fff; border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 700; font-family: 'DM Sans', sans-serif; cursor: pointer; letter-spacing: -0.3px; transition: transform 0.1s; }
+    .pick-btn:active { transform: scale(0.97); }
+    .pick-btn-chores   { background: #6c63d4; box-shadow: 0 4px 20px #6c63d455; }
+    .pick-btn-brain    { background: #3d9bc4; box-shadow: 0 4px 20px #3d9bc455; }
+    .pick-btn-fun      { background: #d46c8a; box-shadow: 0 4px 20px #d46c8a55; }
+    .pick-btn-outside  { background: #3dab5a; box-shadow: 0 4px 20px #3dab5a55; }
+    .pick-btn-exercise { background: #e8943a; box-shadow: 0 4px 20px #e8943a55; }
+    .pick-btn-art      { background: #a63dc4; box-shadow: 0 4px 20px #a63dc455; }
+
+    .result-box { min-height: 72px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.55); border-radius: 14px; padding: 14px; text-align: center; }
+    .result-text { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+    .result-chores   { color: #3a3060; }
+    .result-brain    { color: #1a4a60; }
+    .result-fun      { color: #5c2035; }
+    .result-outside  { color: #1a4a28; }
+    .result-exercise { color: #6b3a0a; }
+    .result-art      { color: #4a1a60; }
+    .result-placeholder { font-size: 13px; color: #bbb; }
+    .spinning { font-size: 14px !important; opacity: 0.5; color: #aaa !important; }
+  </style>
+</head>
+<body>
+<div style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#0b0e11;padding:8px 14px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;"><a href="fun.html" style="color:#2bd95c;text-decoration:none;font-size:13px;font-weight:700;">&larr; Life Suite &middot; Fun &amp; Recreation</a></div><div style="height:34px"></div>
+
+  <h1>What should I do?</h1>
+  <p class="subtitle">Let fate decide.</p>
+  <div class="cards" id="cards-container"></div>
+
+  <script>
+    var categories = [
+      { id: "chores",   label: "Chores",            emoji: "🧹" },
+      { id: "brain",    label: "Brain Food",         emoji: "🧠" },
+      { id: "fun",      label: "Fun at Home",        emoji: "✨" },
+      { id: "outside",  label: "Activities Outside", emoji: "🌿" },
+      { id: "exercise", label: "Exercise Inside",    emoji: "💪" },
+      { id: "art",      label: "Art",                emoji: "🎨" }
+    ];
+
+    var defaults = {
+      chores:   ["Vacuum the living room", "Clean the bathroom", "Do the dishes", "Wipe down counters", "Take out the trash", "Do a load of laundry", "Sweep the kitchen floor", "Declutter one drawer"],
+      brain:    ["Morning pages", "Journal", "Read for 30 minutes", "Do a puzzle", "Plan your week", "Meditate", "Practice guitar", "Watch a documentary"],
+      fun:      ["Watch a movie", "Do a craft project", "Cook something new", "Listen to a new album", "Play a game", "Reorganize something fun", "Stretch and do yoga"],
+      outside:  ["Go for a walk", "Sit outside with a book", "Explore a new neighborhood", "Visit a park", "Go climbing", "Take photos outside", "Find a coffee shop to sit in", "Go to a farmers market"],
+      exercise: ["Bodyweight circuit", "Yoga flow", "Stretch for 20 minutes", "Core workout", "BJJ drills", "MMA practice", "Jump rope", "Dance around your living room"],
+      art:      ["Sketch something nearby", "Doodle freely", "Watercolor practice", "Collage from magazines", "Make a greeting card", "Try a new medium", "Copy a piece you love"]
+    };
+
+    var data = {};
+
+    function save() {
+      try { localStorage.setItem("picker-v4", JSON.stringify(data)); } catch(e) {}
+    }
+
+    function load() {
+      try {
+        var saved = localStorage.getItem("picker-v4");
+        var parsed = saved ? JSON.parse(saved) : {};
+        categories.forEach(function(c) {
+          data[c.id] = (parsed[c.id] && parsed[c.id].length) ? parsed[c.id] : defaults[c.id].slice();
+        });
+      } catch(e) {
+        categories.forEach(function(c) { data[c.id] = defaults[c.id].slice(); });
+      }
+    }
+
+    function renderList(type) {
+      var listEl = document.getElementById(type + "-list");
+      var countEl = document.getElementById(type + "-count");
+      var btnEl = document.getElementById("btn-" + type);
+      if (!listEl || !countEl || !btnEl) return;
+
+      var editorOpen = document.getElementById(type + "-editor").classList.contains("open");
+      var count = data[type].length;
+
+      countEl.textContent = count;
+      btnEl.textContent = (editorOpen ? "Hide list" : "Edit list") + " (" + count + ")";
+
+      listEl.innerHTML = "";
+      data[type].forEach(function(item, i) {
+        var div = document.createElement("div");
+        div.className = "list-item";
+        var span = document.createElement("span");
+        span.textContent = item;
+        var btn = document.createElement("button");
+        btn.className = "remove-btn";
+        btn.textContent = "×";
+        btn.onclick = (function(t, idx) { return function() { removeItem(t, idx); }; })(type, i);
+        div.appendChild(span);
+        div.appendChild(btn);
+        listEl.appendChild(div);
+      });
+    }
+
+    function toggleList(type) {
+      var editor = document.getElementById(type + "-editor");
+      if (!editor) return;
+      editor.classList.toggle("open");
+      renderList(type);
+    }
+
+    function addItem(type) {
+      var input = document.getElementById(type + "-input");
+      if (!input) return;
+      var val = input.value.trim();
+      if (!val) return;
+      data[type].push(val);
+      input.value = "";
+      renderList(type);
+      save();
+    }
+
+    function removeItem(type, i) {
+      data[type].splice(i, 1);
+      renderList(type);
+      save();
+    }
+
+    function pick(type) {
+      var items = data[type];
+      if (!items.length) return;
+      var result = document.getElementById(type + "-result");
+      if (!result) return;
+      result.className = "result-text spinning";
+      var count = 0;
+      var interval = setInterval(function() {
+        result.textContent = items[Math.floor(Math.random() * items.length)];
+        count++;
+        if (count >= 14) {
+          clearInterval(interval);
+          result.className = "result-text result-" + type;
+          result.textContent = items[Math.floor(Math.random() * items.length)];
+        }
+      }, 80);
+    }
+
+    function buildCards() {
+      var container = document.getElementById("cards-container");
+      categories.forEach(function(c) {
+        var t = c.id;
+        var card = document.createElement("div");
+        card.className = "card card-" + t;
+
+        var header = document.createElement("div");
+        header.className = "card-header";
+        header.innerHTML =
+          '<span class="card-emoji">' + c.emoji + '</span>' +
+          '<h2 class="card-title ' + t + '-text">' + c.label + '</h2>' +
+          '<button id="btn-' + t + '" class="edit-btn edit-btn-' + t + '">Edit list (<span id="' + t + '-count">0</span>)</button>';
+
+        var editor = document.createElement("div");
+        editor.className = "list-editor";
+        editor.id = t + "-editor";
+        editor.innerHTML =
+          '<div class="add-row">' +
+            '<input class="add-input add-input-' + t + '" id="' + t + '-input" placeholder="Add something..." />' +
+            '<button class="add-btn add-btn-' + t + '">+</button>' +
+          '</div>' +
+          '<div class="items-list" id="' + t + '-list"></div>';
+
+        var pickBtn = document.createElement("button");
+        pickBtn.className = "pick-btn pick-btn-" + t;
+        pickBtn.textContent = "🎲 Pick one for me";
+
+        var resultBox = document.createElement("div");
+        resultBox.className = "result-box";
+        resultBox.innerHTML = '<p class="result-placeholder" id="' + t + '-result">Hit the button to find out</p>';
+
+        card.appendChild(header);
+        card.appendChild(editor);
+        card.appendChild(pickBtn);
+        card.appendChild(resultBox);
+        container.appendChild(card);
+
+        // attach events after elements exist in DOM
+        document.getElementById("btn-" + t).addEventListener("click", function() { toggleList(t); });
+        editor.querySelector(".add-btn").addEventListener("click", function() { addItem(t); });
+        editor.querySelector(".add-input").addEventListener("keydown", function(e) { if (e.key === "Enter") addItem(t); });
+        pickBtn.addEventListener("click", function() { pick(t); });
+      });
+    }
+
+    load();
+    buildCards();
+    categories.forEach(function(c) { renderList(c.id); });
+  </script>
+
+</body>
+</html>

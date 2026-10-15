@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Goals — Life Suite</title>
+<style>
+:root{
+  --bg:#0b0e11; --panel:#12161b; --panel2:#171c22; --line:#232a31; --line2:#2c353e;
+  --ink:#e9edf1; --muted:#8b94a0; --dim:#5d6672;
+  --frog:#2bd95c; --gold:#ffd700; --red:#ff4d5e; --amber:#ffb454; --blue:#4da3ff; --grey:#7d8590;
+  --radius:14px; --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{color-scheme:dark;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg); color:var(--ink); padding:18px 16px 44px; max-width:880px; margin:0 auto;
+  -webkit-font-smoothing:antialiased;}
+a{color:inherit;}
+.topbar{display:flex; justify-content:space-between; align-items:center; gap:10px;}
+.brand{font-size:12px; letter-spacing:.28em; text-transform:uppercase; color:var(--muted); font-weight:700; text-decoration:none;}
+.brand b{color:var(--ink);}
+.mode-pill{border:1px solid var(--line2); background:var(--panel2); color:var(--ink);
+  border-radius:999px; padding:6px 14px; font-size:12px; font-weight:650; letter-spacing:.04em; white-space:nowrap;}
+nav.suite{display:flex; gap:6px; overflow-x:auto; padding:12px 0 4px; scrollbar-width:none;}
+nav.suite::-webkit-scrollbar{display:none;}
+nav.suite a{flex:0 0 auto; text-decoration:none; font-size:12.5px; font-weight:600; color:var(--muted);
+  border:1px solid var(--line); background:var(--panel); padding:7px 13px; border-radius:999px;}
+nav.suite a.on{color:#06121f; background:var(--frog); border-color:var(--frog);}
+nav.suite a:hover{color:var(--ink); border-color:var(--line2);}
+nav.suite a.on:hover{color:#06121f;}
+.phead{margin:22px 0 6px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+.phead h1{font-size:27px; letter-spacing:-.02em; font-weight:700;}
+.purpose{color:var(--muted); font-size:14.5px; line-height:1.55; max-width:640px;}
+.pill{font-size:9.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  padding:3px 9px; border-radius:99px; border:1px solid var(--line2); color:var(--dim); white-space:nowrap;}
+.pill.building{color:var(--amber); border-color:rgba(255,180,84,.45);}
+.pill.live{color:var(--frog); border-color:rgba(43,217,92,.4);}
+.pill.retained{color:var(--blue); border-color:rgba(77,163,255,.4);}
+.blocks{display:grid; grid-template-columns:1fr; gap:8px; margin-top:18px;}
+@media(min-width:640px){ .blocks{grid-template-columns:1fr 1fr;} }
+.block{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px;}
+.block h3{font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink); font-weight:700; margin-bottom:8px;}
+.block ul{list-style:none;}
+.block li{font-size:13.5px; color:var(--muted); line-height:1.45; padding:4px 0 4px 14px; position:relative;}
+.block li:before{content:""; position:absolute; left:0; top:11px; width:5px; height:5px; border-radius:99px; background:var(--line2);}
+.block p{font-size:13.5px; color:var(--muted); line-height:1.55;}
+.phase{margin-top:22px; border:1px dashed var(--line2); border-radius:12px; padding:13px 16px;
+  font-size:13px; color:var(--dim); line-height:1.55;}
+.phase b{color:var(--muted);}
+footer{margin-top:34px; padding-top:16px; border-top:1px solid var(--line); text-align:center; color:var(--muted); font-size:13px;}
+.foot-sub{font-size:11px; color:var(--dim); margin-top:5px; font-family:var(--mono);}
+/* homepage */
+.dateline{font-size:22px; font-weight:650; letter-spacing:-.01em; margin-top:5px;}
+.modewrap{display:flex; justify-content:space-between; align-items:flex-start; margin-top:14px;}
+.hero{background:linear-gradient(160deg,#131a20,#0e1216); border:1px solid var(--line);
+  border-radius:18px; padding:22px 22px 18px; margin:14px 0 12px; position:relative; overflow:hidden;}
+.hero:before{content:""; position:absolute; inset:0;
+  background:radial-gradient(420px 160px at 18% 0%, rgba(43,217,92,.14), transparent 65%);}
+.hero-label{font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:var(--muted); font-weight:700; position:relative;}
+.hero-row{display:flex; align-items:baseline; gap:12px; margin-top:6px; position:relative; flex-wrap:wrap;}
+.hero-num{font-family:var(--mono); font-size:56px; font-weight:700; letter-spacing:-.03em; line-height:1;}
+.hero-unit{font-size:16px; color:var(--muted);}
+.hero-sub{font-family:var(--mono); font-size:12px; color:var(--dim); margin:10px 0 14px; position:relative;}
+.hero-bar{height:6px; background:#232a31; border-radius:99px; overflow:hidden; position:relative;}
+.hero-fill{height:100%; width:0%; border-radius:99px; background:linear-gradient(90deg,#128a34,var(--frog));}
+.summary{display:grid; grid-template-columns:repeat(5,1fr); gap:8px;}
+.tile{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:12px 4px 10px; text-align:center;}
+.tile b{display:block; font-family:var(--mono); font-size:22px; font-weight:700;}
+.tile span{display:block; margin-top:3px; font-size:9.5px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted);}
+.tile.needs b{color:var(--red);} .tile.active b{color:var(--amber);}
+.tile.on b{color:var(--frog);} .tile.wait b{color:var(--blue);} .tile.stale b{color:var(--grey);}
+section{margin-top:26px;}
+h2.sec{font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:11px;}
+h2.sec .count{color:var(--dim); letter-spacing:.05em;}
+.cards{display:grid; grid-template-columns:1fr; gap:8px;}
+@media(min-width:640px){ .cards{grid-template-columns:1fr 1fr;} }
+.card{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--line2); border-radius:12px; padding:13px 15px;}
+.card h3{font-size:14.5px; font-weight:620;}
+.card p{font-size:13px; color:var(--muted); line-height:1.5; margin-top:3px;}
+.card .status{display:inline-block; font-size:10px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; margin-top:9px; padding:3px 9px; border-radius:99px; border:1px solid var(--line2); color:var(--muted);}
+.card.s-needs-you{border-left-color:var(--red);} .card.s-needs-you .status{color:var(--red); border-color:rgba(255,77,94,.4);}
+.card.s-active{border-left-color:var(--amber);} .card.s-active .status{color:var(--amber); border-color:rgba(255,180,84,.4);}
+.card.s-on-track{border-left-color:var(--frog);} .card.s-on-track .status{color:var(--frog); border-color:rgba(43,217,92,.35);}
+.card.s-waiting{border-left-color:var(--blue);} .card.s-waiting .status{color:var(--blue); border-color:rgba(77,163,255,.4);}
+.card.s-done{opacity:.75;}
+.modules{display:grid; grid-template-columns:1fr; gap:8px;}
+@media(min-width:640px){ .modules{grid-template-columns:1fr 1fr;} }
+a.module{display:block; text-decoration:none; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:13px 15px;}
+a.module:hover{border-color:var(--line2); background:var(--panel2);}
+a.module h3{font-size:14.5px; font-weight:620; display:flex; justify-content:space-between; align-items:center; gap:8px;}
+a.module p{font-size:13px; color:var(--muted); line-height:1.5; margin-top:3px;}
+a.module .go{color:var(--frog); font-size:12px; font-weight:700;}
+details{margin-top:26px;}
+details summary{font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--muted); font-weight:700; cursor:pointer; margin-bottom:11px;}
+/* weeks grid */
+.wgrid{display:grid; grid-template-columns:repeat(52,1fr); gap:2px; margin-top:16px;}
+.wgrid i{display:block; aspect-ratio:1; border-radius:1.5px; background:#232a31;}
+.wgrid i.lived{background:#2f7a44;}
+.wgrid i.now{background:var(--gold);}
+.wlegend{display:flex; gap:16px; margin-top:12px; font-size:12px; color:var(--muted); flex-wrap:wrap;}
+.wlegend b{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px;}
+/* tasks week skeleton */
+.week{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-top:16px;}
+.day{background:var(--panel); border:1px solid var(--line); border-radius:10px; min-height:110px; padding:9px;}
+.day h4{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:700;}
+.day .slot{margin-top:8px; border:1px dashed var(--line2); border-radius:7px; height:26px;}
+@media(max-width:640px){ .week{grid-template-columns:1fr;} .day{min-height:0;} }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html">Life <b>Suite</b></a>
+  <span class="mode-pill" id="modePill">Personal</span>
+</header>
+<nav class="suite"><a href="index.html">Home</a><a href="today.html">Today</a><a href="calendar.html">Calendar</a><a href="tasks.html">Tasks</a><a href="people.html">People</a><a href="health.html">Health</a><a href="journal.html">Journal</a><a href="meals.html">Meals</a><a href="admin.html">Admin</a><a href="buying.html">Buying</a><a href="money.html">Money</a><a href="goals.html" class="on">Goals</a><a href="fun.html">Fun</a><a href="notebook.html">Notebook</a><a href="weeks.html">Weeks</a><a href="cockpit.html">COCKPIT</a></nav>
+
+<div class="phead"><h1>Goals</h1><span class="pill ">Structure</span></div>
+<p class="purpose">Long-horizon goals, Timestripe-style — life goals at the top, broken down until they touch this week.</p>
+<div class="blocks"><div class="block"><h3>Horizons</h3><ul><li>Life → years → months → weeks → today</li><li>Lose 20 lbs lives here, with its baseline and progress</li></ul></div><div class="block"><h3>Projects</h3><ul><li>Active projects with their next action</li><li>Milestones tracked (the 28-day / 1-day / 1-hour pattern)</li></ul></div></div>
+<div class="phase"><b>Where this stands:</b> Structure phase — the layout and navigation are live; this module&#x27;s features build next, one module at a time, in the order you set.</div>
+<footer>
+  <p>Principle: autopilot, not busywork — the system manages; Marina lives.</p>
+  <p class="foot-sub">LIFE SUITE · MARINACAROSELLA.COM</p>
+</footer>
+<script>
+(function(){ var p=document.getElementById('modePill'); if(!p) return;
+  var n=new Date(), h=n.getHours(), d=n.getDay();
+  var w=(d>=1&&d<=5&&h>=8&&h<17); p.textContent=w?'Work':'Personal';
+  if(w){ p.style.background='#4da3ff'; p.style.color='#06121f'; p.style.borderColor='#4da3ff'; } })();
+</script>
+</body>
+</html>
