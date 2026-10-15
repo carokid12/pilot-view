@@ -160,7 +160,7 @@ footer{margin-top:34px; padding-top:16px; border-top:1px solid var(--line); colo
 <div class="wlegend"><span><b style="background:#2f7a44"></b>lived</span><span><b style="background:#ffd700"></b>this week</span><span><b style="background:#232a31"></b>ahead</span><span id="wcount"></span></div>
 <div class="phase"><b>By design:</b> this page never asks you for anything. It exists so the number on the homepage has a shape.</div>
 <script>
-(function(){ var birth=new Date(1995,1,15), eighty=new Date(2075,1,15), now=new Date();
+(function(){ var birth=new Date(1995,1,7), eighty=new Date(2075,1,7), now=new Date();
   var wk=7*24*3600*1000, total=Math.round((eighty-birth)/wk), lived=Math.floor((now-birth)/wk);
   var g=document.getElementById('wgrid'), f=document.createDocumentFragment();
   for(var i=0;i<total;i++){ var c=document.createElement('i');

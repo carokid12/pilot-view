@@ -217,7 +217,7 @@ function todayStr(){ var n=new Date(); return dstr(new Date(n.getTime()-n.getTim
 </script>
 
 <script>
-(function(){ var birth=new Date(1995,1,15), eighty=new Date(2075,1,15), now=new Date();
+(function(){ var birth=new Date(1995,1,7), eighty=new Date(2075,1,7), now=new Date();
   var wk=7*24*3600*1000, total=Math.round((eighty-birth)/wk), lived=Math.floor((now-birth)/wk);
   document.getElementById('weeksLeft').textContent=(total-lived).toLocaleString('en-US');
   document.getElementById('weeksSub').textContent=lived.toLocaleString('en-US')+' LIVED · '+total.toLocaleString('en-US')+' TOTAL · TO AGE 80';
