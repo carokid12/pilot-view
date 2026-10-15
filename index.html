@@ -163,6 +163,10 @@ footer{margin-top:34px; padding-top:16px; border-top:1px solid var(--line); colo
 </section>
 <section class="summary" id="summary"></section>
 <h2 class="sec">Today &amp; overdue — tap to check off <span class="count" id="count-today"></span></h2>
+<div class="addrow" style="margin:0 0 10px">
+  <input type="text" id="homeNew" placeholder="Add a task for today…">
+  <button class="btn" onclick="addHomeTask()">Add</button>
+</div>
 <div id="todayTasks"></div>
 <h2 class="sec">Needs Attention <span class="count" id="count-needs"></span></h2>
 <div class="cards" id="sec-needs"></div>
@@ -218,6 +222,11 @@ function trowHtml(t){
 function toggleHome(cb){ var row=cb.closest('.trow');
   sbPatch('tasks', row.getAttribute('data-id'), {done: cb.checked, done_at: cb.checked? new Date().toISOString(): null})
   .then(function(){ row.classList.toggle('done', cb.checked); });
+}
+function addHomeTask(){
+  var inp=document.getElementById('homeNew'); var v=inp.value.trim(); if(!v) return;
+  sbPost('tasks',{title:v, task_date: todayStr(), mode:'personal', source:'suite'})
+  .then(function(){ inp.value=''; loadToday(); });
 }
 function loadToday(){
   var t = todayStr();

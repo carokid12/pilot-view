@@ -154,6 +154,13 @@ footer{margin-top:34px; padding-top:16px; border-top:1px solid var(--line); colo
 <aside><div class="brand">Life<b>Suite</b></div><nav><a href="index.html">Homepage</a><a href="today.html">Today</a><a href="calendar.html">Calendar</a><a href="tasks.html" class="on">Tasks</a></nav><div class="sgroup">Admin</div><nav><a href="admin.html">Admin</a><a href="buying.html">Buying &amp; Consume</a><a href="notebook.html">Notebook</a></nav><div class="sgroup">Finance</div><nav><a href="money.html">Money</a></nav><div class="sgroup">Health</div><nav><a href="health.html">Health &amp; Fitness</a><a href="journal.html">Journal</a><a href="meals.html">Meals</a></nav><div class="sgroup">Life</div><nav><a href="people.html">People</a><a href="goals.html">Goals</a><a href="fun.html">Fun &amp; Recreation</a><a href="weeks.html">Weeks</a></nav><div class="sgroup">System</div><nav><a href="cockpit.html">COCKPIT</a></nav><div class="modebox" id="modeNow">Mode: <b>—</b></div></aside>
 <main>
 <div class="phead"><h1>Tasks</h1><span class="pill live">Live</span></div><p class="purpose">Your Tweek, rebuilt natively — working now. Check things off here or tell Muse; it&#x27;s the same list. The Tweek subscription retires once you&#x27;ve lived in this for a week.</p>
+<div class="addrow" style="margin-top:16px">
+  <input type="text" id="newTitle" placeholder="New task — type it, pick the day, tap Add">
+  <input type="date" id="newDate">
+  <select id="newMode"><option value="personal">Personal</option><option value="work">Work</option></select>
+  <button class="btn" onclick="addTask()">Add task</button>
+  <span id="flash" style="align-self:center;color:var(--frog);font-size:13px;font-weight:700;opacity:0;transition:opacity .3s"></span>
+</div>
 <div class="addrow">
   <span class="seg">
     <button data-m="all" onclick="setMode('all')">All</button>
@@ -176,13 +183,6 @@ footer{margin-top:34px; padding-top:16px; border-top:1px solid var(--line); colo
   <summary style="font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:700;cursor:pointer">Recurring templates <span class="count" id="count-tmpl"></span></summary>
   <div id="templates" style="margin-top:11px"></div>
 </details>
-<h2 class="sec">Add a task</h2>
-<div class="addrow">
-  <input type="text" id="newTitle" placeholder="Task title — or just tell Muse instead">
-  <input type="date" id="newDate">
-  <select id="newMode"><option value="personal">Personal</option><option value="work">Work</option></select>
-  <button class="btn" onclick="addTask()">Add</button>
-</div>
 
 <footer>
   <p>Principle: autopilot, not busywork — the system manages; Marina lives.</p>
@@ -248,7 +248,8 @@ function render(){
     var list = topLevel().filter(function(t){ return t.task_date===ds && inMode(t); });
     list.sort(sortTasks);
     col.innerHTML = '<h4 class="'+(ds===tstr?'today':'')+'">'+days[i]+' '+d.getDate()+'</h4>'
-      + (list.length? list.map(function(t){ return rowHtml(t, kidsOf(t.id).filter(inMode)); }).join('') : '<div class="empty">—</div>');
+      + (list.length? list.map(function(t){ return rowHtml(t, kidsOf(t.id).filter(inMode)); }).join('') : '<div class="empty">—</div>')
+      + '<button class="btn ghost small" style="margin-top:6px;width:100%" onclick="addForDay(\''+ds+'\')">+ Add</button>';
     wk.appendChild(col);
   }
   var monStr = dstr(new Date(mon.getTime()-mon.getTimezoneOffset()*60000));
@@ -275,7 +276,17 @@ function addTask(){
   var inp = document.getElementById('newTitle'); var title = inp.value.trim(); if(!title) return;
   var date = document.getElementById('newDate').value || null;
   var m = document.getElementById('newMode').value;
-  sbPost('tasks', {title:title, task_date:date, mode:m, source:'suite'}).then(function(){ inp.value=''; load(); });
+  sbPost('tasks', {title:title, task_date:date, mode:m, source:'suite'}).then(function(){ inp.value=''; flash('Task added'); load(); });
+}
+function addForDay(ds){
+  document.getElementById('newDate').value = ds;
+  var inp = document.getElementById('newTitle'); inp.focus();
+  inp.scrollIntoView({behavior:'smooth', block:'center'});
+}
+function flash(msg){
+  var f = document.getElementById('flash'); if(!f) return;
+  f.textContent = msg; f.style.opacity = '1';
+  setTimeout(function(){ f.style.opacity = '0'; }, 1600);
 }
 function load(){ sbGet('tasks','select=*&order=task_date.asc.nullslast,sort_order.asc&limit=2000').then(function(rows){ ALL=rows||[]; render(); }); }
 document.getElementById('newDate').value = todayStr();
