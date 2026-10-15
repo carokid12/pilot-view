@@ -1,146 +1,112 @@
-/* Section layout: title, which items belong, whether it starts collapsed,
-   and whether to show the item's area tag (useful in the cross-cutting
-   "Needs Attention" view). */
-const SECTIONS = [
-  { id: "needs",    title: "Needs Attention", filter: (i) => i.status === "needs_you", showArea: true,  collapsed: false },
-  { id: "tracking", title: "Active Tracking", filter: (i) => i.area === "Tracking" || i.area === "Today", showArea: false, collapsed: false },
-  { id: "systems",  title: "Running Systems", filter: (i) => i.area === "Systems", showArea: false, collapsed: false },
-  { id: "upcoming", title: "Upcoming",        filter: (i) => i.area === "Upcoming", showArea: false, collapsed: false },
-  { id: "closed",   title: "Recently Closed", filter: (i) => i.area === "Closed" || i.status === "done", showArea: false, collapsed: true },
-];
+// Life Suite homepage v2
+// Real today: Weeks Left (computed), status cards (data.json, refreshed by Muse),
+// module map. Tasks/To Do plugs in from Supabase with the Tasks module build.
 
-const STATUS_LABELS = {
-  needs_you: "Needs you",
-  on_track: "On track",
-  waiting: "Waiting",
-  done: "Done",
-};
+// ---------- Weeks Left (born Feb 1995, planning horizon age 80) ----------
+(function () {
+  var birth = new Date(1995, 1, 15);          // mid-Feb 1995 (exact day was declined; precise enough)
+  var eighty = new Date(2075, 1, 15);
+  var now = new Date();
+  var weekMs = 7 * 24 * 3600 * 1000;
+  var total = Math.round((eighty - birth) / weekMs);
+  var lived = Math.floor((now - birth) / weekMs);
+  var left = total - lived;
+  document.getElementById('weeksLeft').textContent = left.toLocaleString('en-US');
+  document.getElementById('weeksSub').textContent =
+    lived.toLocaleString('en-US') + ' lived of ~' + total.toLocaleString('en-US') + ' weeks (to age 80)';
+  document.getElementById('weeksFill').style.width = (100 * lived / total).toFixed(1) + '%';
+})();
 
-const app = document.getElementById("app");
-
-/* ---------- Data loading ---------- */
-async function loadData() {
-  const main = document.getElementById("sections");
-  main.innerHTML = '<p class="loading">Loading…</p>';
-  try {
-    // Cache-buster so a cron-overwritten data.json is always fresh.
-    const res = await fetch("data.json?v=" + Date.now());
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    const data = await res.json();
-    render(data);
-  } catch (err) {
-    main.innerHTML = '<p class="error-msg">Couldn\'t load data.json (' + err.message + ').</p>';
-  }
-}
-
-document.getElementById("refresh-btn").addEventListener("click", (e) => {
-  e.currentTarget.disabled = true;
-  loadData().finally(() => { e.currentTarget.disabled = false; });
-});
-
-/* ---------- Rendering ---------- */
-function render(data) {
-  const items = Array.isArray(data.items) ? data.items : [];
-
-  renderUpdatedAt(data.updated_at);
-  renderSummary(items);
-  renderSections(items);
-}
-
-function renderUpdatedAt(iso) {
-  const el = document.getElementById("updated-at");
-  if (!iso) { el.textContent = ""; return; }
-  const d = new Date(iso);
-  if (isNaN(d)) { el.textContent = ""; return; }
-  el.textContent = "Updated " + d.toLocaleString(undefined, {
-    month: "short", day: "numeric", year: "numeric",
-    hour: "numeric", minute: "2-digit",
+// ---------- Dateline + mode pill ----------
+(function () {
+  var now = new Date();
+  document.getElementById('dateline').textContent =
+    now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  var btn = document.getElementById('modeToggle');
+  var hour = now.getHours(), day = now.getDay();
+  var workHours = day >= 1 && day <= 5 && hour >= 8 && hour < 17;
+  setMode(workHours ? 'Work' : 'Personal');
+  btn.addEventListener('click', function () {
+    setMode(btn.textContent === 'Work' ? 'Personal' : 'Work');
   });
-}
-
-function renderSummary(items) {
-  const counts = { needs_you: 0, on_track: 0, waiting: 0, done: 0 };
-  for (const i of items) {
-    if (counts[i.status] !== undefined) counts[i.status]++;
+  function setMode(m) {
+    btn.textContent = m;
+    btn.classList.toggle('work', m === 'Work');
   }
-  const tiles = [
-    ["needs_you", "Needs you"],
-    ["on_track", "On track"],
-    ["waiting", "Waiting"],
-    ["done", "Done"],
-  ];
-  document.getElementById("summary").innerHTML = tiles.map(([key, label]) => `
-    <div class="stat ${key}">
-      <div class="stat-count">${counts[key]}</div>
-      <div class="stat-label">${label}</div>
-    </div>`).join("");
-}
+})();
 
-function cardHTML(item, showArea) {
-  const label = STATUS_LABELS[item.status] || item.status || "—";
-  const area = showArea && item.area ? `<div class="card-area">${escapeHTML(item.area)}</div>` : "";
-  return `
-    <div class="card ${escapeHTML(item.status || "")}">
-      <div class="card-top">
-        <div class="card-title">${escapeHTML(item.title || "Untitled")}</div>
-        <span class="badge ${escapeHTML(item.status || "")}">${escapeHTML(label)}</span>
-      </div>
-      ${item.detail ? `<div class="card-detail">${escapeHTML(item.detail)}</div>` : ""}
-      ${area}
-    </div>`;
-}
+// ---------- Module map ----------
+var MODULES = [
+  { name: 'Tasks', tag: 'Building', cls: 'building',
+    desc: 'Your Tweek, rebuilt natively — week view, frog/gold priorities, subtasks as reminders. Phase 1, in progress.' },
+  { name: 'CRM — People', tag: 'Planned', cls: '',
+    desc: 'People Queue (who to text, from your message history), birthday → gift pipeline, Monica-style person profiles.' },
+  { name: 'Health & Fitness', tag: 'Planned', cls: '',
+    desc: 'Journal, health cadence and appointments, meal planning under 1,600 cal, weekly check-in. Sleep waits on a wearable you will actually wear.' },
+  { name: 'Admin', tag: 'Planned', cls: '',
+    desc: 'Chore routines, inventory with reorder points, deliveries, returns and errands queues.' },
+  { name: 'Buying & Consume', tag: 'Planned', cls: '',
+    desc: 'The buying agent dump spot, grocery and To Buy lists, and your mymind saves flowing into one inbox.' },
+  { name: 'Money', tag: 'Planned', cls: '',
+    desc: 'Firefly III model: budgets, piggy banks, bills matched when paid, rules that categorize automatically from your bank feed.' },
+  { name: 'What Should I Do?', tag: 'Retained', cls: 'retained',
+    desc: 'Your activity picker (46 activities, 6 categories) — source copied from Netlify, rebuilds inside Fun & Recreation.' },
+  { name: 'COCKPIT', tag: 'Live (lite)', cls: 'live',
+    desc: 'Integration health and automations running — the Running Systems section above is its first version.' }
+];
+(function () {
+  var wrap = document.getElementById('modules');
+  MODULES.forEach(function (m) {
+    var d = document.createElement('div');
+    d.className = 'module';
+    d.innerHTML = '<h3>' + m.name + ' <span class="pill ' + m.cls + '">' + m.tag + '</span></h3><p>' + m.desc + '</p>';
+    wrap.appendChild(d);
+  });
+})();
 
-function renderSections(items) {
-  const main = document.getElementById("sections");
-  const matched = new Set();
-  let html = "";
+// ---------- Status cards from data.json ----------
+// data.json shape: { updated_at, items: [{ id, title, detail, status, area }] }
+// status: needs_you | active | on_track | waiting | stale | done
+// area:   Today | Tracking | Systems | Upcoming | Closed
+(function () {
+  var LABEL = { needs_you: 'Needs you', active: 'Active', on_track: 'On track',
+                waiting: 'Waiting', stale: 'Stale', done: 'Done' };
+  fetch('data.json', { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var items = data.items || [];
+      var counts = { needs_you: 0, active: 0, on_track: 0, waiting: 0, stale: 0 };
+      items.forEach(function (it) { if (counts[it.status] !== undefined) counts[it.status]++; });
 
-  for (const sec of SECTIONS) {
-    const secItems = items.filter((i) => {
-      const hit = sec.filter(i);
-      if (hit) matched.add(i.id || i.title);
-      return hit;
-    });
+      function render(secId, countId, list) {
+        var el = document.getElementById(secId);
+        var cEl = document.getElementById(countId);
+        if (cEl) cEl.textContent = '(' + list.length + ')';
+        list.forEach(function (it) {
+          var d = document.createElement('div');
+          d.className = 'card';
+          d.innerHTML = '<h3>' + it.title + '</h3><p>' + (it.detail || '') + '</p>' +
+            '<span class="status ' + it.status.replace('_', '-') + '">' + (LABEL[it.status] || it.status) + '</span>';
+          el.appendChild(d);
+        });
+      }
+      render('sec-needs', 'count-needs', items.filter(function (i) { return i.status === 'needs_you'; }));
+      render('sec-active', 'count-active', items.filter(function (i) { return i.area === 'Tracking' && i.status !== 'needs_you'; }));
+      render('sec-running', 'count-running', items.filter(function (i) { return i.area === 'Systems'; }));
+      render('sec-upcoming', 'count-upcoming', items.filter(function (i) { return i.area === 'Upcoming'; }));
+      render('sec-closed', 'count-closed', items.filter(function (i) { return i.area === 'Closed' || i.status === 'done'; }));
 
-    const cards = secItems.length
-      ? `<div class="cards">${secItems.map((i) => cardHTML(i, sec.showArea)).join("")}</div>`
-      : `<p class="empty-note">Nothing here right now.</p>`;
-
-    if (sec.collapsed) {
-      html += `
-        <section class="section">
-          <details class="closed-section">
-            <summary><h2>${sec.title}</h2><span class="section-count">${secItems.length}</span></summary>
-            ${cards}
-          </details>
-        </section>`;
-    } else {
-      html += `
-        <section class="section">
-          <div class="section-head"><h2>${sec.title}</h2><span class="section-count">${secItems.length}</span></div>
-          ${cards}
-        </section>`;
-    }
-  }
-
-  // Fallback: anything that didn't match a section still gets shown.
-  const unmatched = items.filter((i) => !matched.has(i.id || i.title));
-  if (unmatched.length) {
-    html += `
-      <section class="section">
-        <div class="section-head"><h2>Other</h2><span class="section-count">${unmatched.length}</span></div>
-        <div class="cards">${unmatched.map((i) => cardHTML(i, true)).join("")}</div>
-      </section>`;
-  }
-
-  main.innerHTML = html;
-}
-
-function escapeHTML(s) {
-  return String(s).replace(/[&<>"']/g, (c) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
-  }[c]));
-}
-
-/* ---------- Boot ---------- */
-loadData();
+      document.getElementById('summary').innerHTML =
+        tile(counts.needs_you, 'Needs you', 'needs') + tile(counts.active, 'Active', 'active') +
+        tile(counts.on_track, 'On track', 'on') + tile(counts.waiting, 'Waiting', 'wait') +
+        tile(counts.stale, 'Stale', 'stale');
+      if (data.updated_at) {
+        document.getElementById('updated').textContent =
+          'status data ' + new Date(data.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      }
+      function tile(n, label, cls) {
+        return '<div class="tile ' + cls + '"><b>' + n + '</b><span>' + label + '</span></div>';
+      }
+    })
+    .catch(function () { /* data.json missing: homepage still renders */ });
+})();

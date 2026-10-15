@@ -3,29 +3,66 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pilot View</title>
+<meta name="robots" content="noindex, nofollow">
+<title>Life Suite — Marina</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<header class="topbar">
+  <div>
+    <h1>Life Suite</h1>
+    <p class="dateline" id="dateline">—</p>
+  </div>
+  <button class="mode-pill" id="modeToggle" title="Toggle mode">Personal</button>
+</header>
 
-<!-- ============ DASHBOARD ============ -->
-<div id="app">
-  <header class="topbar">
-    <div class="topbar-title">
-      <h1>Pilot View</h1>
-      <p id="updated-at" class="updated-at"></p>
-    </div>
-    <button id="refresh-btn" class="refresh-btn" type="button">Refresh</button>
-  </header>
+<section class="weeks-band">
+  <div class="weeks-main">
+    <span class="weeks-num" id="weeksLeft">—</span>
+    <span class="weeks-label">weeks left</span>
+  </div>
+  <div class="weeks-sub" id="weeksSub">—</div>
+  <div class="weeks-bar"><div class="weeks-fill" id="weeksFill"></div></div>
+</section>
 
-  <section id="summary" class="summary" aria-label="Status summary"></section>
+<section class="summary" id="summary"></section>
 
-  <main id="sections"></main>
+<main>
+  <section>
+    <h2>Needs Attention <span class="count" id="count-needs"></span></h2>
+    <div class="cards" id="sec-needs"></div>
+  </section>
 
-  <footer class="footer">
-    Pilot View &middot; marinacarosella.com
-  </footer>
-</div>
+  <section>
+    <h2>Active Tracking <span class="count" id="count-active"></span></h2>
+    <div class="cards" id="sec-active"></div>
+  </section>
+
+  <section>
+    <h2>COCKPIT — Running Systems <span class="count" id="count-running"></span></h2>
+    <div class="cards" id="sec-running"></div>
+  </section>
+
+  <section>
+    <h2>Modules</h2>
+    <div class="modules" id="modules"></div>
+  </section>
+
+  <section>
+    <h2>Upcoming <span class="count" id="count-upcoming"></span></h2>
+    <div class="cards" id="sec-upcoming"></div>
+  </section>
+
+  <details>
+    <summary>Recently Closed <span class="count" id="count-closed"></span></summary>
+    <div class="cards" id="sec-closed"></div>
+  </details>
+</main>
+
+<footer>
+  <p>Principle: autopilot, not busywork — the system manages; Marina lives.</p>
+  <p class="foot-sub">Life Suite · marinacarosella.com · <span id="updated"></span></p>
+</footer>
 
 <script src="app.js"></script>
 </body>
