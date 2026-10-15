@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pilot View</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============ DASHBOARD ============ -->
+<div id="app">
+  <header class="topbar">
+    <div class="topbar-title">
+      <h1>Pilot View</h1>
+      <p id="updated-at" class="updated-at"></p>
+    </div>
+    <button id="refresh-btn" class="refresh-btn" type="button">Refresh</button>
+  </header>
+
+  <section id="summary" class="summary" aria-label="Status summary"></section>
+
+  <main id="sections"></main>
+
+  <footer class="footer">
+    Pilot View &middot; marinacarosella.com
+  </footer>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
