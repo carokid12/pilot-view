@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Wiki — Life Suite</title>
+<style>
+:root{
+  --bg:#0b0e11; --panel:#12161b; --panel2:#171c22; --line:#232a31; --line2:#2c353e;
+  --ink:#e9edf1; --muted:#8b94a0; --dim:#5d6672;
+  --frog:#2bd95c; --gold:#ffd700; --red:#ff4d5e; --amber:#ffb454; --blue:#4da3ff; --grey:#7d8590;
+  --radius:14px; --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{color-scheme:dark;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased;}
+a{color:inherit;}
+.layout{display:grid; grid-template-columns:216px 1fr; min-height:100vh;}
+aside{background:#0e1216; border-right:1px solid var(--line); padding:18px 12px; position:sticky; top:0; height:100vh; overflow-y:auto;}
+.brand{font-size:12px; letter-spacing:.26em; text-transform:uppercase; color:var(--muted); font-weight:700; padding:2px 10px 14px;}
+.brand b{color:var(--ink); display:block; font-size:19px; letter-spacing:-.01em; text-transform:none; margin-top:3px;}
+.sgroup{font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:var(--dim); font-weight:700; padding:14px 10px 5px;}
+aside nav a{display:block; text-decoration:none; font-size:14px; font-weight:550; color:var(--muted); padding:8px 10px; border-radius:9px;}
+aside nav a:hover{color:var(--ink); background:var(--panel2);}
+aside nav a.on{color:var(--ink); background:var(--panel2); box-shadow:inset 2.5px 0 0 var(--frog);}
+.modebox{margin:16px 10px 0; border:1px solid var(--line); border-radius:10px; padding:9px 11px; font-size:12px; color:var(--muted);}
+.modebox b{color:var(--ink);}
+main{padding:22px 26px 48px; max-width:980px;}
+@media(max-width:760px){
+  .layout{grid-template-columns:1fr;}
+  aside{position:static; height:auto; border-right:none; border-bottom:1px solid var(--line); padding:12px;}
+  aside nav{display:flex; flex-wrap:wrap; gap:2px;}
+  aside nav a{padding:7px 10px;}
+  .sgroup{width:100%; padding:8px 10px 2px;}
+  .brand{padding-bottom:6px;} .modebox{display:none;}
+  main{padding:18px 16px 40px;}
+}
+.phead{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+.phead h1{font-size:27px; letter-spacing:-.02em; font-weight:700;}
+.purpose{color:var(--muted); font-size:14.5px; line-height:1.55; max-width:660px; margin-top:6px;}
+.pill{font-size:9.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; padding:3px 9px; border-radius:99px; border:1px solid var(--line2); color:var(--dim); white-space:nowrap;}
+.pill.building{color:var(--amber); border-color:rgba(255,180,84,.45);}
+.pill.live{color:var(--frog); border-color:rgba(43,217,92,.4);}
+.pill.retained{color:var(--blue); border-color:rgba(77,163,255,.4);}
+h2.sec{font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--muted); font-weight:700; margin:26px 0 11px;}
+h2.sec .count{color:var(--dim); letter-spacing:.05em;}
+.blocks{display:grid; grid-template-columns:1fr; gap:8px; margin-top:16px;}
+@media(min-width:700px){ .blocks{grid-template-columns:1fr 1fr;} }
+.block{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px;}
+.block h3{font-size:13px; letter-spacing:.14em; text-transform:uppercase; font-weight:700; margin-bottom:8px;}
+.block ul{list-style:none;}
+.block li{font-size:13.5px; color:var(--muted); line-height:1.45; padding:4px 0 4px 14px; position:relative;}
+.block li:before{content:""; position:absolute; left:0; top:11px; width:5px; height:5px; border-radius:99px; background:var(--line2);}
+.block p{font-size:13.5px; color:var(--muted); line-height:1.55;}
+.phase{margin-top:20px; border:1px dashed var(--line2); border-radius:12px; padding:13px 16px; font-size:13px; color:var(--dim); line-height:1.55;}
+.phase b{color:var(--muted);}
+/* buttons + inputs */
+.btn{background:var(--frog); color:#06121f; border:none; font-weight:700; font-size:13.5px; padding:9px 16px; border-radius:10px; cursor:pointer;}
+.btn.ghost{background:var(--panel2); color:var(--ink); border:1px solid var(--line2);}
+.btn.small{padding:5px 11px; font-size:12.5px;}
+.btn:active{transform:translateY(1px);}
+input,select,textarea{background:var(--panel2); border:1px solid var(--line2); color:var(--ink); border-radius:10px; padding:9px 12px; font-size:14px; font-family:inherit;}
+input:focus,textarea:focus,select:focus{outline:none; border-color:var(--frog);}
+.addrow{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;}
+.addrow input[type=text]{flex:1; min-width:170px;}
+.seg{display:inline-flex; border:1px solid var(--line2); border-radius:10px; overflow:hidden;}
+.seg button{background:var(--panel2); color:var(--muted); border:none; padding:8px 14px; font-size:13px; font-weight:600; cursor:pointer;}
+.seg button.on{background:var(--frog); color:#06121f;}
+/* tasks */
+.trow{display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--line); border-radius:11px; padding:10px 12px; margin-bottom:6px;}
+.trow input[type=checkbox]{width:19px; height:19px; margin-top:1px; accent-color:var(--frog); flex:0 0 auto; cursor:pointer;}
+.trow .tt{flex:1; font-size:14.5px; line-height:1.4;}
+.trow.done .tt{color:var(--dim); text-decoration:line-through;}
+.trow .sub{margin:6px 0 0 29px;}
+.trow .sub .trow{background:var(--panel2); padding:7px 10px;}
+.dot{display:inline-block; width:8px; height:8px; border-radius:99px; margin-right:7px; vertical-align:1px;}
+.dot.red{background:var(--red);} .dot.orange{background:var(--amber);} .dot.purple{background:#c07fe8;}
+.dot.blue{background:var(--blue);} .dot.grey{background:var(--grey);}
+.tag{font-size:10px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--dim); border:1px solid var(--line2); padding:2px 7px; border-radius:99px; white-space:nowrap;}
+.week{display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin-top:14px;}
+@media(max-width:900px){ .week{grid-template-columns:1fr;} }
+.daycol h4{font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:8px;}
+.daycol h4.today{color:var(--frog);}
+.daycol .trow{padding:8px 9px;} .daycol .tt{font-size:13.5px;}
+.empty{font-size:12.5px; color:var(--dim); border:1px dashed var(--line); border-radius:10px; padding:9px; text-align:center;}
+/* lists (journal/buying/ideas/people/accounts) */
+.lrow{display:flex; gap:10px; align-items:flex-start; background:var(--panel); border:1px solid var(--line); border-radius:11px; padding:11px 13px; margin-bottom:6px;}
+.lrow .lt{flex:1; font-size:14.5px; line-height:1.45;}
+.lrow .lt small{display:block; color:var(--dim); font-size:12px; margin-top:2px;}
+.lrow input[type=checkbox]{width:19px; height:19px; accent-color:var(--frog); cursor:pointer;}
+.lrow.done .lt{color:var(--dim); text-decoration:line-through;}
+.x{background:none; border:none; color:var(--dim); font-size:16px; cursor:pointer; padding:0 2px;}
+.x:hover{color:var(--red);}
+/* inventory */
+table.inv{width:100%; border-collapse:collapse; margin-top:10px;}
+table.inv th{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); text-align:left; padding:6px 8px; border-bottom:1px solid var(--line);}
+table.inv td{font-size:14px; padding:8px; border-bottom:1px solid var(--line);}
+.qtybtn{background:var(--panel2); border:1px solid var(--line2); color:var(--ink); width:26px; height:26px; border-radius:8px; cursor:pointer; font-size:15px; line-height:1;}
+.low{color:var(--red); font-weight:700;}
+/* meals */
+.mgrid{display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin-top:14px;}
+@media(max-width:900px){ .mgrid{grid-template-columns:1fr;} }
+.mday{background:var(--panel); border:1px solid var(--line); border-radius:11px; padding:10px;}
+.mday h4{font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:7px;}
+.mday .tot{font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:8px;}
+.mday .tot.over{color:var(--red); font-weight:700;}
+.mentry{font-size:13px; line-height:1.4; padding:5px 0; border-bottom:1px dashed var(--line);}
+.mentry small{color:var(--dim);}
+/* hero + tiles (homepage) */
+.hero{background:linear-gradient(160deg,#131a20,#0e1216); border:1px solid var(--line); border-radius:18px; padding:22px; margin:16px 0 12px; position:relative; overflow:hidden;}
+.hero:before{content:""; position:absolute; inset:0; background:radial-gradient(420px 160px at 18% 0%, rgba(43,217,92,.14), transparent 65%);}
+.hero-label{font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:var(--muted); font-weight:700; position:relative;}
+.hero-row{display:flex; align-items:baseline; gap:12px; margin-top:6px; position:relative; flex-wrap:wrap;}
+.hero-num{font-family:var(--mono); font-size:54px; font-weight:700; letter-spacing:-.03em; line-height:1;}
+.hero-unit{font-size:16px; color:var(--muted);}
+.hero-sub{font-family:var(--mono); font-size:12px; color:var(--dim); margin:10px 0 14px; position:relative;}
+.hero-bar{height:6px; background:#232a31; border-radius:99px; overflow:hidden; position:relative;}
+.hero-fill{height:100%; background:linear-gradient(90deg,#128a34,var(--frog)); border-radius:99px;}
+.summary{display:grid; grid-template-columns:repeat(5,1fr); gap:8px;}
+.tile{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:12px 4px 10px; text-align:center;}
+.tile b{display:block; font-family:var(--mono); font-size:22px; font-weight:700;}
+.tile span{display:block; margin-top:3px; font-size:9.5px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted);}
+.tile.needs b{color:var(--red);} .tile.active b{color:var(--amber);} .tile.on b{color:var(--frog);} .tile.wait b{color:var(--blue);} .tile.stale b{color:var(--grey);}
+.cards{display:grid; grid-template-columns:1fr; gap:8px;}
+@media(min-width:700px){ .cards{grid-template-columns:1fr 1fr;} }
+.card{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--line2); border-radius:12px; padding:13px 15px;}
+.card h3{font-size:14.5px; font-weight:620;}
+.card p{font-size:13px; color:var(--muted); line-height:1.5; margin-top:3px;}
+.card .status{display:inline-block; font-size:10px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; margin-top:9px; padding:3px 9px; border-radius:99px; border:1px solid var(--line2); color:var(--muted);}
+.card.s-needs-you{border-left-color:var(--red);} .card.s-on-track{border-left-color:var(--frog);}
+.card.s-waiting{border-left-color:var(--blue);} .card.s-active{border-left-color:var(--amber);}
+.modules{display:grid; grid-template-columns:1fr; gap:8px;}
+@media(min-width:700px){ .modules{grid-template-columns:1fr 1fr;} }
+a.module{display:block; text-decoration:none; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:13px 15px;}
+a.module:hover{border-color:var(--line2); background:var(--panel2);}
+a.module h3{font-size:14.5px; font-weight:620; display:flex; justify-content:space-between; align-items:center; gap:8px;}
+a.module p{font-size:13px; color:var(--muted); line-height:1.5; margin-top:3px;}
+a.module .go{color:var(--frog); font-size:12px; font-weight:700;}
+.dateline{font-size:21px; font-weight:650; letter-spacing:-.01em;}
+/* weeks grid */
+.wgrid{display:grid; grid-template-columns:repeat(52,1fr); gap:2px; margin-top:16px;}
+.wgrid i{display:block; aspect-ratio:1; border-radius:1.5px; background:#232a31;}
+.wgrid i.lived{background:#2f7a44;} .wgrid i.now{background:var(--gold);}
+.wlegend{display:flex; gap:16px; margin-top:12px; font-size:12px; color:var(--muted); flex-wrap:wrap;}
+.wlegend b{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px;}
+footer{margin-top:34px; padding-top:16px; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+.foot-sub{font-size:11px; color:var(--dim); margin-top:5px; font-family:var(--mono);}
+/* in-place editing (v5.3) */
+.ebtn{background:none; border:1px solid var(--line2); color:var(--muted); border-radius:7px; padding:2px 8px; font-size:11.5px; cursor:pointer; flex:none; font-family:inherit;}
+.ebtn:hover{color:var(--ink); border-color:var(--frog);}
+.editbox{margin:8px 0 4px; border:1px solid var(--line2); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:7px; background:var(--panel2);}
+.editbox label{font-size:10.5px; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; font-weight:700;}
+.editbox input,.editbox select,.editbox textarea{background:var(--input); border:1px solid var(--line); border-radius:8px; color:var(--ink); padding:7px 9px; font-size:13.5px; font-family:inherit; width:100%;}
+.erow{display:flex; gap:7px;} .erow>*{flex:1;}
+.wikih h3{font-size:16px; margin:18px 0 4px;} .wikih p,.wikih li{font-size:14px; color:var(--muted); line-height:1.6;}
+.wikih ul{padding-left:18px; margin:4px 0 10px;}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside><div class="brand">Life<b>Suite</b></div><div class="sgroup">Modules</div><nav><a href="index.html">Homepage</a><a href="events.html">Events</a><a href="people.html">CRM</a><a href="health.html">Health &amp; Fitness</a><a href="vanity.html">Vanity</a><a href="admin.html">Admin</a><a href="money.html">Money</a><a href="fun.html">Fun &amp; Recreation</a><a href="data.html">Data governance</a><a href="wiki.html" class="on">Wiki</a></nav><div class="modebox" id="modeNow">Mode: <b>—</b></div></aside>
+<main>
+
+<div class="wikih">
+<p style="margin-top:14px">This page explains every part of your Life Suite: what it does, how you use it, and what Muse does with it. When a new feature ships, it gets logged at the bottom.</p>
+
+<h3>How the whole thing works</h3>
+<ul>
+<li><b>Two ways to use it, same data.</b> Talk to Muse in chat (type or voice) — Muse writes it into the suite. Or tap on the site itself. Everything is editable in both places.</li>
+<li><b>The site saves everything.</b> Every Add, Edit, check-off and Delete on this site writes straight to your private database. Nothing here is just a picture of another app.</li>
+<li><b>Edit anything:</b> every card and row has an <b>Edit</b> button. Tap it, change the fields, tap Save.</li>
+<li><b>Private:</b> only your email gets in, with a one-time code. No password.</li>
+<li><b>Tablet:</b> leave it open — pages refresh themselves every minute.</li>
+</ul>
+
+<h3>Homepage</h3>
+<p>Your glance page, with exactly the blocks from your outline: Weeks Left, Today in a nutshell, To Do (check things off right there, or add a task for today), Email that needs action, Life reminders, Event suggestions, Upcoming items of note, Grocery dash, Notifications/insights, and Shipping status. The blocks fill in from Muse's daily work — briefings, inbox cleanups, deliveries.</p>
+
+<h3>Tasks (inside Admin)</h3>
+<p>Your Tweek, rebuilt here. Week view with your frog (🐸) and gold stars first. Check off, filter Personal/Work, jump weeks. <b>Edit</b> any task to change its title, day, Personal/Work, priority, color marker, or notes — and to add subtasks or delete the task. The <b>+ Add</b> under each day starts a task on that day. Repeating tasks: tell Muse the task and how often — Muse sets the repeat (nothing repeats without you naming the frequency).</p>
+
+<h3>CRM</h3>
+<p>Your people. All 78 of your Google Contacts are loaded, birthdays included. The queue sorts by who you're most overdue to reach — tap <b>Contacted today</b> when you talk to someone, or <b>Edit</b> a card to change their birthday, your reach-out rhythm (every N days), last-contact date, or the notes (emails, phones, how you met, gift ideas — whatever you want remembered). Add people with the form at the bottom, or tell Muse.</p>
+
+<h3>Health &amp; Fitness</h3>
+<p>The umbrella page links three working tools. <b>Journal</b>: a nightly prompt; write and save entries, edit or delete them later — or dictate to Muse and it files the entry. <b>Meals</b>: your week of meals; tap + Add or Edit on any day, set calories, and each day totals itself against 1,600. <b>Notebook</b> also sits under Health in your outline for the physical side.</p>
+
+<h3>Notebook</h3>
+<p>A real notebook in the suite: write notes, edit them, pin the important ones, split Personal / Work. Muse writes here too when you dictate notes in chat. Next pipe: your Dynalist lists mirrored in.</p>
+
+<h3>Admin</h3>
+<p>The house. <b>Inventory</b>: every supply with how many you have, where it lives, and the reorder point — tap − / + as you use things; Edit changes any field; anything at its reorder point appears at the top and belongs on To Buy. <b>Buying</b> (linked from Admin): To Buy and Grocery lists — check off, edit, delete, add. "I need X" in chat lands on Grocery; "buy X" means Muse stages a real checkout for your approval.</p>
+
+<h3>Money</h3>
+<p>Accounts you can add and edit, with a live net-worth total. Budgets, bills, and automatic categorization switch on when the bank feed connects — then there's no typing at all.</p>
+
+<h3>Vanity</h3>
+<p>Fashion goals and beauty routine — two simple lists, fully editable.</p>
+
+<h3>Fun &amp; Recreation</h3>
+<p>Your "What Should I Do?" picker (46 activities), an editable idea list for things to do, and links to Goals (the bucket list) and Weeks (your life in a grid of weeks — gold is this week).</p>
+
+<h3>Events</h3>
+<p>Structure page for now: your calendar feed and nearby suggestions land here in the next pipe. Your calendar itself already flows through Muse (briefings, invites, conflicts).</p>
+
+<h3>Data governance</h3>
+<p>The control room (your COCKPIT, filed here): live counts from the database, the automations running for you, data sources, and application health.</p>
+
+<h3>Feature log</h3>
+<ul>
+<li><b>Oct 15, 2026 — v5.3:</b> everything editable. Edit + delete on Tasks, CRM cards, Journal, Meals, Inventory, Buying, Goals, Money accounts, Ideas, Vanity. Notebook became a real notebook (write/edit/pin). This wiki added.</li>
+<li><b>Oct 15, 2026 — CRM × Google Contacts:</b> all 78 contacts loaded with birthdays, phones, emails. Weeks Left math made exact from your own contact card.</li>
+<li><b>Oct 15, 2026 — v5.2:</b> sidebar rebuilt to your Dynalist Modules list exactly; homepage reduced to only your Homepage blocks; Vanity and Data governance pages added.</li>
+<li><b>Oct 15, 2026 — v5.1:</b> task creation fixed — add bar at the top of Tasks, + Add on every day, quick-add on the homepage.</li>
+<li><b>Oct 15, 2026 — v5:</b> the suite launches at marinacarosella.com: sidebar layout from your sketch, your Tweek imported (174 tasks + subtasks), working Journal / Meals / Buying / Inventory / People / Money / Goals, picker included, auto-deploy fixed, database live.</li>
+<li><b>Oct 15, 2026 — foundations:</b> domain + private login (only your email), Supabase database, requirements doc, ERP outline in Dynalist.</li>
+</ul>
+</div>
+
+<footer>
+  <p>Principle: autopilot, not busywork — the system manages; Marina lives.</p>
+  <p class="foot-sub">LIFE SUITE · MARINACAROSELLA.COM</p>
+</footer>
+</main>
+</div>
+
+<script>
+(function(){ var p=document.getElementById('modeNow'); if(!p) return;
+  var n=new Date(), h=n.getHours(), d=n.getDay();
+  var w=(d>=1&&d<=5&&h>=8&&h<17); p.innerHTML='Mode: <b>'+(w?'Work':'Personal')+'</b>'; })();
+</script>
+
+
+</body>
+</html>

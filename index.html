@@ -147,11 +147,20 @@ a.module .go{color:var(--frog); font-size:12px; font-weight:700;}
 .wlegend b{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px;}
 footer{margin-top:34px; padding-top:16px; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
 .foot-sub{font-size:11px; color:var(--dim); margin-top:5px; font-family:var(--mono);}
+/* in-place editing (v5.3) */
+.ebtn{background:none; border:1px solid var(--line2); color:var(--muted); border-radius:7px; padding:2px 8px; font-size:11.5px; cursor:pointer; flex:none; font-family:inherit;}
+.ebtn:hover{color:var(--ink); border-color:var(--frog);}
+.editbox{margin:8px 0 4px; border:1px solid var(--line2); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:7px; background:var(--panel2);}
+.editbox label{font-size:10.5px; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; font-weight:700;}
+.editbox input,.editbox select,.editbox textarea{background:var(--input); border:1px solid var(--line); border-radius:8px; color:var(--ink); padding:7px 9px; font-size:13.5px; font-family:inherit; width:100%;}
+.erow{display:flex; gap:7px;} .erow>*{flex:1;}
+.wikih h3{font-size:16px; margin:18px 0 4px;} .wikih p,.wikih li{font-size:14px; color:var(--muted); line-height:1.6;}
+.wikih ul{padding-left:18px; margin:4px 0 10px;}
 </style>
 </head>
 <body>
 <div class="layout">
-<aside><div class="brand">Life<b>Suite</b></div><div class="sgroup">Modules</div><nav><a href="index.html" class="on">Homepage</a><a href="events.html">Events</a><a href="people.html">CRM</a><a href="health.html">Health &amp; Fitness</a><a href="vanity.html">Vanity</a><a href="admin.html">Admin</a><a href="money.html">Money</a><a href="fun.html">Fun &amp; Recreation</a><a href="data.html">Data governance</a></nav><div class="modebox" id="modeNow">Mode: <b>—</b></div></aside>
+<aside><div class="brand">Life<b>Suite</b></div><div class="sgroup">Modules</div><nav><a href="index.html" class="on">Homepage</a><a href="events.html">Events</a><a href="people.html">CRM</a><a href="health.html">Health &amp; Fitness</a><a href="vanity.html">Vanity</a><a href="admin.html">Admin</a><a href="money.html">Money</a><a href="fun.html">Fun &amp; Recreation</a><a href="data.html">Data governance</a><a href="wiki.html">Wiki</a></nav><div class="modebox" id="modeNow">Mode: <b>—</b></div></aside>
 <main>
 
 <div class="dateline" id="dateline">—</div>

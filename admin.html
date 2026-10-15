@@ -147,11 +147,20 @@ a.module .go{color:var(--frog); font-size:12px; font-weight:700;}
 .wlegend b{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px;}
 footer{margin-top:34px; padding-top:16px; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
 .foot-sub{font-size:11px; color:var(--dim); margin-top:5px; font-family:var(--mono);}
+/* in-place editing (v5.3) */
+.ebtn{background:none; border:1px solid var(--line2); color:var(--muted); border-radius:7px; padding:2px 8px; font-size:11.5px; cursor:pointer; flex:none; font-family:inherit;}
+.ebtn:hover{color:var(--ink); border-color:var(--frog);}
+.editbox{margin:8px 0 4px; border:1px solid var(--line2); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:7px; background:var(--panel2);}
+.editbox label{font-size:10.5px; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; font-weight:700;}
+.editbox input,.editbox select,.editbox textarea{background:var(--input); border:1px solid var(--line); border-radius:8px; color:var(--ink); padding:7px 9px; font-size:13.5px; font-family:inherit; width:100%;}
+.erow{display:flex; gap:7px;} .erow>*{flex:1;}
+.wikih h3{font-size:16px; margin:18px 0 4px;} .wikih p,.wikih li{font-size:14px; color:var(--muted); line-height:1.6;}
+.wikih ul{padding-left:18px; margin:4px 0 10px;}
 </style>
 </head>
 <body>
 <div class="layout">
-<aside><div class="brand">Life<b>Suite</b></div><div class="sgroup">Modules</div><nav><a href="index.html">Homepage</a><a href="events.html">Events</a><a href="people.html">CRM</a><a href="health.html">Health &amp; Fitness</a><a href="vanity.html">Vanity</a><a href="admin.html" class="on">Admin</a><a href="money.html">Money</a><a href="fun.html">Fun &amp; Recreation</a><a href="data.html">Data governance</a></nav><div class="modebox" id="modeNow">Mode: <b>—</b></div></aside>
+<aside><div class="brand">Life<b>Suite</b></div><div class="sgroup">Modules</div><nav><a href="index.html">Homepage</a><a href="events.html">Events</a><a href="people.html">CRM</a><a href="health.html">Health &amp; Fitness</a><a href="vanity.html">Vanity</a><a href="admin.html" class="on">Admin</a><a href="money.html">Money</a><a href="fun.html">Fun &amp; Recreation</a><a href="data.html">Data governance</a><a href="wiki.html">Wiki</a></nav><div class="modebox" id="modeNow">Mode: <b>—</b></div></aside>
 <main>
 <div class="phead"><h1>Admin</h1><span class="pill live">Live</span></div><p class="purpose">The running of the house: supplies counted, reorder points watched, routines on rails.</p>
 <div class="blocks">
@@ -200,19 +209,29 @@ function todayStr(){ var n=new Date(); return dstr(new Date(n.getTime()-n.getTim
 </script>
 
 <script>
-var ITEMS=[];
+var ITEMS=[], IEDIT=null;
 function renderInv(){
-  var tb=document.getElementById('invBody'); 
-  tb.innerHTML = ITEMS.map(function(i){
+  var tb=document.getElementById('invBody');
+  var html = ITEMS.map(function(i){
     var low = i.counted && i.reorder_at!=null && Number(i.qty)<=Number(i.reorder_at);
-    return '<tr><td>'+esc(i.name)+'</td><td>'
+    var row = '<tr><td>'+esc(i.name)+'</td><td>'
       +'<button class="qtybtn" onclick="bump(\''+i.id+'\',-1)">−</button> '
       +'<b class="'+(low?'low':'')+'">'+i.qty+'</b> '+esc(i.unit||'')
       +' <button class="qtybtn" onclick="bump(\''+i.id+'\',1)">+</button></td>'
       +'<td>'+esc(i.location||'—')+'</td><td>'+(i.reorder_at==null?'—':i.reorder_at)+'</td>'
       +'<td>'+(i.counted?'':'<span class="tag">uncounted</span>')+'</td>'
-      +'<td><button class="x" onclick="delItem(\''+i.id+'\')">✕</button></td></tr>';
-  }).join('') || '<tr><td colspan="6" style="color:var(--dim)">Nothing tracked yet — add your first supply below.</td></tr>';
+      +'<td><button class="ebtn" onclick="toggleIEdit(\''+i.id+'\')">Edit</button> <button class="x" onclick="delItem(\''+i.id+'\')">✕</button></td></tr>';
+    if(IEDIT !== i.id) return row;
+    return row + '<tr><td colspan="6"><div class="editbox" data-iedit="'+i.id+'" style="margin:0">'
+      + '<div class="erow"><div><label>Name</label><input type="text" id="ie-name" value="'+esc(i.name)+'"></div>'
+      + '<div><label>Qty</label><input type="number" id="ie-qty" value="'+i.qty+'"></div>'
+      + '<div><label>Unit</label><input type="text" id="ie-unit" value="'+esc(i.unit||'')+'"></div></div>'
+      + '<div class="erow"><div><label>Location</label><input type="text" id="ie-loc" value="'+esc(i.location||'')+'"></div>'
+      + '<div><label>Reorder at</label><input type="number" id="ie-re" value="'+(i.reorder_at==null?'':i.reorder_at)+'"></div></div>'
+      + '<div class="erow"><button class="btn" onclick="saveItem(\''+i.id+'\')">Save</button>'
+      + '<button class="btn ghost" onclick="toggleIEdit(null)">Cancel</button></div></div></td></tr>';
+  }).join('');
+  tb.innerHTML = html || '<tr><td colspan="6" style="color:var(--dim)">Nothing tracked yet — add your first supply below.</td></tr>';
   var lows = ITEMS.filter(function(i){ return i.counted && i.reorder_at!=null && Number(i.qty)<=Number(i.reorder_at); });
   document.getElementById('lowList').innerHTML = lows.length? lows.map(function(i){ return '<div class="lrow"><div class="lt"><b class="low">'+esc(i.name)+'</b> — '+i.qty+' '+esc(i.unit||'')+' left<small>At or below reorder point ('+i.reorder_at+') → belongs on To Buy</small></div></div>'; }).join('') : '<div class="empty">Nothing at reorder point</div>';
   document.getElementById('count-low').textContent='('+lows.length+')';
@@ -220,6 +239,17 @@ function renderInv(){
 function bump(id,d){ var it=ITEMS.filter(function(x){return x.id===id;})[0]; if(!it) return;
   var q=Number(it.qty)+d; if(q<0) q=0; it.qty=q; it.counted=true; renderInv();
   sbPatch('inventory_items', id, {qty:q, counted:true, updated_at:new Date().toISOString()}); }
+function toggleIEdit(id){ IEDIT = (IEDIT===id? null : id); renderInv(); }
+function saveItem(id){
+  var box = document.querySelector('[data-iedit="'+id+'"]'); if(!box) return;
+  var t = box.querySelector('#ie-name').value.trim(); if(!t) return;
+  var re = box.querySelector('#ie-re').value;
+  sbPatch('inventory_items', id, {name:t, qty:Number(box.querySelector('#ie-qty').value||0),
+    unit: box.querySelector('#ie-unit').value.trim()||null,
+    location: box.querySelector('#ie-loc').value.trim()||null,
+    reorder_at: re===''? null : Number(re), counted:true, updated_at:new Date().toISOString()})
+  .then(function(){ IEDIT=null; loadInv(); });
+}
 function delItem(id){ sbDel('inventory_items', id).then(loadInv); }
 function addItem(){
   var name=document.getElementById('iName').value.trim(); if(!name) return;

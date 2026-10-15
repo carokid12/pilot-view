@@ -147,11 +147,20 @@ a.module .go{color:var(--frog); font-size:12px; font-weight:700;}
 .wlegend b{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px;}
 footer{margin-top:34px; padding-top:16px; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
 .foot-sub{font-size:11px; color:var(--dim); margin-top:5px; font-family:var(--mono);}
+/* in-place editing (v5.3) */
+.ebtn{background:none; border:1px solid var(--line2); color:var(--muted); border-radius:7px; padding:2px 8px; font-size:11.5px; cursor:pointer; flex:none; font-family:inherit;}
+.ebtn:hover{color:var(--ink); border-color:var(--frog);}
+.editbox{margin:8px 0 4px; border:1px solid var(--line2); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:7px; background:var(--panel2);}
+.editbox label{font-size:10.5px; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; font-weight:700;}
+.editbox input,.editbox select,.editbox textarea{background:var(--input); border:1px solid var(--line); border-radius:8px; color:var(--ink); padding:7px 9px; font-size:13.5px; font-family:inherit; width:100%;}
+.erow{display:flex; gap:7px;} .erow>*{flex:1;}
+.wikih h3{font-size:16px; margin:18px 0 4px;} .wikih p,.wikih li{font-size:14px; color:var(--muted); line-height:1.6;}
+.wikih ul{padding-left:18px; margin:4px 0 10px;}
 </style>
 </head>
 <body>
 <div class="layout">
-<aside><div class="brand">Life<b>Suite</b></div><div class="sgroup">Modules</div><nav><a href="index.html">Homepage</a><a href="events.html">Events</a><a href="people.html" class="on">CRM</a><a href="health.html">Health &amp; Fitness</a><a href="vanity.html">Vanity</a><a href="admin.html">Admin</a><a href="money.html">Money</a><a href="fun.html">Fun &amp; Recreation</a><a href="data.html">Data governance</a></nav><div class="modebox" id="modeNow">Mode: <b>—</b></div></aside>
+<aside><div class="brand">Life<b>Suite</b></div><div class="sgroup">Modules</div><nav><a href="index.html">Homepage</a><a href="events.html">Events</a><a href="people.html" class="on">CRM</a><a href="health.html">Health &amp; Fitness</a><a href="vanity.html">Vanity</a><a href="admin.html">Admin</a><a href="money.html">Money</a><a href="fun.html">Fun &amp; Recreation</a><a href="data.html">Data governance</a><a href="wiki.html">Wiki</a></nav><div class="modebox" id="modeNow">Mode: <b>—</b></div></aside>
 <main>
 <div class="phead"><h1>People — CRM</h1><span class="pill live">Live</span></div><p class="purpose">Who matters, when you last talked, and who it&#x27;s time to reach out to — modeled on Monica. Your Google Contacts are loaded in (78 people, birthdays included). The automatic version fills &#x27;last contact&#x27; from your message history (your iMessage export pipe); until then, one tap on &#x27;Contacted today&#x27; keeps it true.</p>
 <h2 class="sec">People queue — most overdue first</h2>
@@ -194,6 +203,7 @@ function todayStr(){ var n=new Date(); return dstr(new Date(n.getTime()-n.getTim
 var PPL=[];
 function daysSince(d){ if(!d) return null; var n=new Date(); var t=new Date(n.getFullYear(),n.getMonth(),n.getDate());
   var p=new Date(d+'T00:00:00'); return Math.round((t-p)/86400000); }
+var PEDIT = null;
 function renderPeople(){
   var sorted=PPL.slice().sort(function(a,b){
     var da=daysSince(a.last_contact), db=daysSince(b.last_contact);
@@ -204,15 +214,37 @@ function renderPeople(){
   document.getElementById('people').innerHTML = sorted.length? sorted.map(function(p){
     var ds=daysSince(p.last_contact);
     var due = p.interval_days && ds!=null && ds>=p.interval_days;
-    return '<div class="lrow"><div class="lt"><b>'+esc(p.name)+'</b>'
+    var card = '<div class="lrow"><div class="lt"><b>'+esc(p.name)+'</b>'
       + (due? ' <span class="tag" style="color:var(--amber);border-color:rgba(255,180,84,.5)">time to reach out</span>' : '')
       + '<small>'+(ds==null? 'No contact logged yet' : 'Last contact '+ds+' day'+(ds===1?'':'s')+' ago')
       + (p.interval_days? ' · your rhythm: every '+p.interval_days+' days' : '')
       + (p.birthday? ' · birthday: '+esc(p.birthday) : '')+'</small>'
       + (p.notes? '<small>'+esc(p.notes)+'</small>' : '')+'</div>'
       + '<button class="btn ghost small" onclick="touch(\''+p.id+'\')">Contacted today</button>'
+      + '<button class="ebtn" onclick="togglePEdit(\''+p.id+'\')">Edit</button>'
       + '<button class="x" onclick="delPerson(\''+p.id+'\')">✕</button></div>';
+    if(PEDIT !== p.id) return card;
+    return card + '<div class="editbox" data-pedit="'+p.id+'">'
+      + '<div><label>Name</label><input type="text" id="pe-name" value="'+esc(p.name)+'"></div>'
+      + '<div class="erow"><div><label>Birthday</label><input type="date" id="pe-bday" value="'+(p.birthday||'')+'"></div>'
+      + '<div><label>Reach out every (days)</label><input type="number" id="pe-int" value="'+(p.interval_days||'')+'"></div>'
+      + '<div><label>Last contacted</label><input type="date" id="pe-last" value="'+(p.last_contact||'')+'"></div></div>'
+      + '<div><label>Notes — emails, phones, how you met, gifts, anything</label><textarea id="pe-notes" rows="3">'+esc(p.notes||'')+'</textarea></div>'
+      + '<div class="erow"><button class="btn" onclick="savePerson(\''+p.id+'\')">Save</button>'
+      + '<button class="btn ghost" onclick="togglePEdit(null)">Cancel</button></div></div>';
   }).join('') : '<div class="empty">Nobody here yet — add your inner circle below, or tell Muse who matters.</div>';
+}
+function togglePEdit(id){ PEDIT = (PEDIT===id? null : id); renderPeople(); }
+function savePerson(id){
+  var box = document.querySelector('[data-pedit="'+id+'"]'); if(!box) return;
+  var iv = box.querySelector('#pe-int').value;
+  var patch = { name: box.querySelector('#pe-name').value.trim(),
+    birthday: box.querySelector('#pe-bday').value || null,
+    interval_days: iv===''? null : parseInt(iv,10),
+    last_contact: box.querySelector('#pe-last').value || null,
+    notes: box.querySelector('#pe-notes').value.trim() || null };
+  if(!patch.name) return;
+  sbPatch('people', id, patch).then(function(){ PEDIT=null; loadPeople(); });
 }
 function touch(id){ sbPatch('people', id, {last_contact: todayStr()}).then(loadPeople); }
 function delPerson(id){ sbDel('people', id).then(loadPeople); }

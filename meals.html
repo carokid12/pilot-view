@@ -147,11 +147,20 @@ a.module .go{color:var(--frog); font-size:12px; font-weight:700;}
 .wlegend b{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px;}
 footer{margin-top:34px; padding-top:16px; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
 .foot-sub{font-size:11px; color:var(--dim); margin-top:5px; font-family:var(--mono);}
+/* in-place editing (v5.3) */
+.ebtn{background:none; border:1px solid var(--line2); color:var(--muted); border-radius:7px; padding:2px 8px; font-size:11.5px; cursor:pointer; flex:none; font-family:inherit;}
+.ebtn:hover{color:var(--ink); border-color:var(--frog);}
+.editbox{margin:8px 0 4px; border:1px solid var(--line2); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:7px; background:var(--panel2);}
+.editbox label{font-size:10.5px; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; font-weight:700;}
+.editbox input,.editbox select,.editbox textarea{background:var(--input); border:1px solid var(--line); border-radius:8px; color:var(--ink); padding:7px 9px; font-size:13.5px; font-family:inherit; width:100%;}
+.erow{display:flex; gap:7px;} .erow>*{flex:1;}
+.wikih h3{font-size:16px; margin:18px 0 4px;} .wikih p,.wikih li{font-size:14px; color:var(--muted); line-height:1.6;}
+.wikih ul{padding-left:18px; margin:4px 0 10px;}
 </style>
 </head>
 <body>
 <div class="layout">
-<aside><div class="brand">Life<b>Suite</b></div><div class="sgroup">Modules</div><nav><a href="index.html">Homepage</a><a href="events.html">Events</a><a href="people.html">CRM</a><a href="health.html">Health &amp; Fitness</a><a href="vanity.html">Vanity</a><a href="admin.html">Admin</a><a href="money.html">Money</a><a href="fun.html">Fun &amp; Recreation</a><a href="data.html">Data governance</a></nav><div class="modebox" id="modeNow">Mode: <b>—</b></div></aside>
+<aside><div class="brand">Life<b>Suite</b></div><div class="sgroup">Modules</div><nav><a href="index.html">Homepage</a><a href="events.html">Events</a><a href="people.html">CRM</a><a href="health.html">Health &amp; Fitness</a><a href="vanity.html">Vanity</a><a href="admin.html">Admin</a><a href="money.html">Money</a><a href="fun.html">Fun &amp; Recreation</a><a href="data.html">Data governance</a><a href="wiki.html">Wiki</a></nav><div class="modebox" id="modeNow">Mode: <b>—</b></div></aside>
 <main>
 <div class="phead"><h1>Meals</h1><span class="pill live">Live</span></div><p class="purpose">The week, planned once. Every day totals itself against your 1,600-calorie target.</p>
 <div class="mgrid" id="mgrid"></div>
@@ -184,9 +193,18 @@ function todayStr(){ var n=new Date(); return dstr(new Date(n.getTime()-n.getTim
 </script>
 
 <script>
-var PLAN=[];
+var PLAN=[], MEDIT=null;
 function monday(){ var n=new Date(); var d=new Date(n.getFullYear(),n.getMonth(),n.getDate());
   var dow=(d.getDay()+6)%7; d.setDate(d.getDate()-dow); return d; }
+function mealEditor(day, entry){
+  return '<div class="editbox" data-medit="'+day+'" style="margin-top:8px">'
+    + '<div><label>Meal</label><input type="text" id="me-text" value="'+esc(entry? entry.text : '')+'"></div>'
+    + '<div><label>Calories</label><input type="number" id="me-cal" value="'+(entry && entry.calories!=null? entry.calories : '')+'"></div>'
+    + '<div class="erow"><button class="btn" onclick="saveMeal(\''+day+'\',\''+(entry? entry.id : '')+'\')">Save</button>'
+    + '<button class="btn ghost" onclick="closeMeal()">Cancel</button>'
+    + (entry? '<button class="btn ghost" style="color:var(--red);border-color:var(--red)" onclick="delMeal(\''+entry.id+'\')">Delete</button>' : '')
+    + '</div></div>';
+}
 function renderMeals(){
   var mon=monday(); var days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
   var wrap=document.getElementById('mgrid'); wrap.innerHTML='';
@@ -197,18 +215,25 @@ function renderMeals(){
     var tot=es.reduce(function(s,e){ return s+(e.calories||0); },0);
     var col=document.createElement('div'); col.className='mday';
     col.innerHTML='<h4>'+days[i]+' '+d.getDate()+'</h4>'
-      + es.map(function(e){ return '<div class="mentry">'+esc(e.text)+' <small>'+(e.calories? e.calories+' cal':'')+'</small> <button class="x" onclick="delMeal(\''+e.id+'\')">✕</button></div>'; }).join('')
-      + '<button class="btn ghost small" style="margin-top:8px" onclick="addMeal(\''+ds+'\')">+ Add</button>'
+      + es.map(function(e){ return '<div class="mentry">'+esc(e.text)+' <small>'+(e.calories? e.calories+' cal':'')+'</small> <button class="ebtn" onclick="editMeal(\''+ds+'\',\''+e.id+'\')">Edit</button></div>'
+        + (MEDIT===ds+':'+e.id? mealEditor(ds, e) : ''); }).join('')
+      + (MEDIT===ds+':new'? mealEditor(ds, null) : '')
+      + '<button class="btn ghost small" style="margin-top:8px" onclick="editMeal(\''+ds+'\',\'new\')">+ Add</button>'
       + '<div class="tot'+(tot>1600?' over':'')+'">'+(tot? tot+' / 1600 cal':'No plan yet')+'</div>';
     wrap.appendChild(col);
   }
 }
-function addMeal(ds){
-  var text=prompt('Meal for '+ds+':'); if(!text) return;
-  var cal=prompt('Calories (estimate is fine):','');
-  sbPost('meal_plan',{day:ds, text:text, calories: cal? parseInt(cal,10): null}).then(loadMeals);
+function editMeal(ds, id){ MEDIT = ds+':'+id; renderMeals(); }
+function closeMeal(){ MEDIT=null; renderMeals(); }
+function saveMeal(ds, id){
+  var box = document.querySelector('[data-medit="'+ds+'"]'); if(!box) return;
+  var text = box.querySelector('#me-text').value.trim(); if(!text) return;
+  var cal = box.querySelector('#me-cal').value;
+  var body = {day:ds, text:text, calories: cal===''? null : parseInt(cal,10)};
+  var done = function(){ MEDIT=null; loadMeals(); };
+  if(id){ sbPatch('meal_plan', id, body).then(done); } else { sbPost('meal_plan', body).then(done); }
 }
-function delMeal(id){ sbDel('meal_plan', id).then(loadMeals); }
+function delMeal(id){ sbDel('meal_plan', id).then(function(){ MEDIT=null; loadMeals(); }); }
 function loadMeals(){ sbGet('meal_plan','select=*&order=created_at.asc&limit=500').then(function(r){ PLAN=r||[]; renderMeals(); }); }
 loadMeals(); setInterval(loadMeals, 60000);
 </script>

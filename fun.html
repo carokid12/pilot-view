@@ -147,11 +147,20 @@ a.module .go{color:var(--frog); font-size:12px; font-weight:700;}
 .wlegend b{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px;}
 footer{margin-top:34px; padding-top:16px; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
 .foot-sub{font-size:11px; color:var(--dim); margin-top:5px; font-family:var(--mono);}
+/* in-place editing (v5.3) */
+.ebtn{background:none; border:1px solid var(--line2); color:var(--muted); border-radius:7px; padding:2px 8px; font-size:11.5px; cursor:pointer; flex:none; font-family:inherit;}
+.ebtn:hover{color:var(--ink); border-color:var(--frog);}
+.editbox{margin:8px 0 4px; border:1px solid var(--line2); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:7px; background:var(--panel2);}
+.editbox label{font-size:10.5px; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; font-weight:700;}
+.editbox input,.editbox select,.editbox textarea{background:var(--input); border:1px solid var(--line); border-radius:8px; color:var(--ink); padding:7px 9px; font-size:13.5px; font-family:inherit; width:100%;}
+.erow{display:flex; gap:7px;} .erow>*{flex:1;}
+.wikih h3{font-size:16px; margin:18px 0 4px;} .wikih p,.wikih li{font-size:14px; color:var(--muted); line-height:1.6;}
+.wikih ul{padding-left:18px; margin:4px 0 10px;}
 </style>
 </head>
 <body>
 <div class="layout">
-<aside><div class="brand">Life<b>Suite</b></div><div class="sgroup">Modules</div><nav><a href="index.html">Homepage</a><a href="events.html">Events</a><a href="people.html">CRM</a><a href="health.html">Health &amp; Fitness</a><a href="vanity.html">Vanity</a><a href="admin.html">Admin</a><a href="money.html">Money</a><a href="fun.html" class="on">Fun &amp; Recreation</a><a href="data.html">Data governance</a></nav><div class="modebox" id="modeNow">Mode: <b>—</b></div></aside>
+<aside><div class="brand">Life<b>Suite</b></div><div class="sgroup">Modules</div><nav><a href="index.html">Homepage</a><a href="events.html">Events</a><a href="people.html">CRM</a><a href="health.html">Health &amp; Fitness</a><a href="vanity.html">Vanity</a><a href="admin.html">Admin</a><a href="money.html">Money</a><a href="fun.html" class="on">Fun &amp; Recreation</a><a href="data.html">Data governance</a><a href="wiki.html">Wiki</a></nav><div class="modebox" id="modeNow">Mode: <b>—</b></div></aside>
 <main>
 <div class="phead"><h1>Fun &amp; Recreation</h1><span class="pill live">Live</span></div><p class="purpose">Play, protected. Your picker when deciding is the hard part; your ideas when you need one.</p>
 <div class="blocks">
@@ -191,11 +200,24 @@ function todayStr(){ var n=new Date(); return dstr(new Date(n.getTime()-n.getTim
 </script>
 
 <script>
-var IDEAS=[];
+var IDEAS=[], IDEDIT=null;
 function renderIdeas(){
   document.getElementById('ideas').innerHTML = IDEAS.length? IDEAS.map(function(i){
-    return '<div class="lrow'+(i.done?' done':'')+'"><input type="checkbox" '+(i.done?'checked':'')+' onchange="toggleIdea(\''+i.id+'\',this.checked)"><div class="lt">'+esc(i.text)+'</div><button class="x" onclick="delIdea(\''+i.id+'\')">✕</button></div>';
+    var row = '<div class="lrow'+(i.done?' done':'')+'"><input type="checkbox" '+(i.done?'checked':'')+' onchange="toggleIdea(\''+i.id+'\',this.checked)"><div class="lt">'+esc(i.text)+'</div>'
+      +'<button class="ebtn" onclick="toggleIdEdit(\''+i.id+'\')">Edit</button>'
+      +'<button class="x" onclick="delIdea(\''+i.id+'\')">✕</button></div>';
+    if(IDEDIT !== i.id) return row;
+    return row + '<div class="editbox" data-idedit="'+i.id+'"><div class="erow">'
+      + '<input type="text" id="ide-text" value="'+esc(i.text)+'">'
+      + '<button class="btn" onclick="saveIdea(\''+i.id+'\')">Save</button>'
+      + '<button class="btn ghost" onclick="toggleIdEdit(null)">Cancel</button></div></div>';
   }).join('') : '<div class="empty">No ideas yet — add the first below</div>';
+}
+function toggleIdEdit(id){ IDEDIT = (IDEDIT===id? null : id); renderIdeas(); }
+function saveIdea(id){
+  var box = document.querySelector('[data-idedit="'+id+'"]'); if(!box) return;
+  var v = box.querySelector('#ide-text').value.trim(); if(!v) return;
+  sbPatch('ideas', id, {text:v}).then(function(){ IDEDIT=null; loadIdeas(); });
 }
 function toggleIdea(id,v){ sbPatch('ideas', id, {done:v}).then(loadIdeas); }
 function delIdea(id){ sbDel('ideas', id).then(loadIdeas); }

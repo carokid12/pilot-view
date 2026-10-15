@@ -147,11 +147,20 @@ a.module .go{color:var(--frog); font-size:12px; font-weight:700;}
 .wlegend b{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px;}
 footer{margin-top:34px; padding-top:16px; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
 .foot-sub{font-size:11px; color:var(--dim); margin-top:5px; font-family:var(--mono);}
+/* in-place editing (v5.3) */
+.ebtn{background:none; border:1px solid var(--line2); color:var(--muted); border-radius:7px; padding:2px 8px; font-size:11.5px; cursor:pointer; flex:none; font-family:inherit;}
+.ebtn:hover{color:var(--ink); border-color:var(--frog);}
+.editbox{margin:8px 0 4px; border:1px solid var(--line2); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:7px; background:var(--panel2);}
+.editbox label{font-size:10.5px; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; font-weight:700;}
+.editbox input,.editbox select,.editbox textarea{background:var(--input); border:1px solid var(--line); border-radius:8px; color:var(--ink); padding:7px 9px; font-size:13.5px; font-family:inherit; width:100%;}
+.erow{display:flex; gap:7px;} .erow>*{flex:1;}
+.wikih h3{font-size:16px; margin:18px 0 4px;} .wikih p,.wikih li{font-size:14px; color:var(--muted); line-height:1.6;}
+.wikih ul{padding-left:18px; margin:4px 0 10px;}
 </style>
 </head>
 <body>
 <div class="layout">
-<aside><div class="brand">Life<b>Suite</b></div><div class="sgroup">Modules</div><nav><a href="index.html">Homepage</a><a href="events.html">Events</a><a href="people.html">CRM</a><a href="health.html">Health &amp; Fitness</a><a href="vanity.html">Vanity</a><a href="admin.html">Admin</a><a href="money.html">Money</a><a href="fun.html">Fun &amp; Recreation</a><a href="data.html">Data governance</a></nav><div class="modebox" id="modeNow">Mode: <b>—</b></div></aside>
+<aside><div class="brand">Life<b>Suite</b></div><div class="sgroup">Modules</div><nav><a href="index.html">Homepage</a><a href="events.html">Events</a><a href="people.html">CRM</a><a href="health.html">Health &amp; Fitness</a><a href="vanity.html">Vanity</a><a href="admin.html">Admin</a><a href="money.html">Money</a><a href="fun.html">Fun &amp; Recreation</a><a href="data.html">Data governance</a><a href="wiki.html">Wiki</a></nav><div class="modebox" id="modeNow">Mode: <b>—</b></div></aside>
 <main>
 <div class="phead"><h1>Tasks</h1><span class="pill live">Live</span></div><p class="purpose">Your Tweek, rebuilt natively — working now. Check things off here or tell Muse; it&#x27;s the same list. The Tweek subscription retires once you&#x27;ve lived in this for a week.</p>
 <div class="addrow" style="margin-top:16px">
@@ -217,13 +226,56 @@ function mondayOf(off){ var n=new Date(); var d=new Date(n.getFullYear(),n.getMo
   var dow=(d.getDay()+6)%7; d.setDate(d.getDate()-dow+off*7); return d; }
 function prioIcon(t){ if(t.priority==='frog') return '\uD83D\uDC38 '; if(t.priority==='gold') return '\u2B50 '; return ''; }
 function dotHtml(t){ if(t.marker && t.marker!=='none') return '<span class="dot '+t.marker+'"></span>'; return ''; }
+var EDITING = null;
 function rowHtml(t,kids){
   var subs = kids.map(function(k){ return rowHtml(k,[]); }).join('');
-  return '<div class="trow'+(t.done?' done':'')+'" data-id="'+t.id+'">'
+  var main = '<div class="trow'+(t.done?' done':'')+'" data-id="'+t.id+'">'
     + '<input type="checkbox" '+(t.done?'checked':'')+' onchange="toggleTask(this)">'
-    + '<div style="flex:1"><div class="tt">'+dotHtml(t)+prioIcon(t)+esc(t.title)+'</div>'
+    + '<div style="flex:1"><div class="tt">'+dotHtml(t)+prioIcon(t)+esc(t.title)
+    + (t.notes? '<div style="font-size:12px;color:var(--dim);font-weight:400;margin-top:2px">'+esc(t.notes)+'</div>' : '')
+    + '</div>'
     + (subs? '<div class="sub">'+subs+'</div>' : '') + '</div>'
-    + (t.mode? '<span class="tag">'+t.mode+'</span>' : '') + '</div>';
+    + (t.mode? '<span class="tag">'+t.mode+'</span>' : '')
+    + '<button class="ebtn" onclick="toggleEdit(\''+t.id+'\')">Edit</button></div>';
+  if(EDITING !== t.id) return main;
+  var marks = ['none','red','orange','purple','blue','grey'].map(function(m){
+    return '<option value="'+m+'"'+(t.marker===m?' selected':'')+'>'+m+'</option>'; }).join('');
+  var pris = ['normal','gold','frog'].map(function(p){
+    return '<option value="'+p+'"'+(t.priority===p?' selected':'')+'>'+p+'</option>'; }).join('');
+  return main + '<div class="editbox" data-edit="'+t.id+'">'
+    + '<div><label>Title</label><input type="text" id="e-title" value="'+esc(t.title)+'"></div>'
+    + '<div class="erow"><div><label>Date</label><input type="date" id="e-date" value="'+(t.task_date||'')+'"></div>'
+    + '<div><label>Mode</label><select id="e-mode"><option value="personal"'+(t.mode==='personal'?' selected':'')+'>Personal</option><option value="work"'+(t.mode==='work'?' selected':'')+'>Work</option></select></div></div>'
+    + '<div class="erow"><div><label>Priority</label><select id="e-prio">'+pris+'</select></div>'
+    + '<div><label>Marker</label><select id="e-marker">'+marks+'</select></div></div>'
+    + '<div><label>Notes</label><input type="text" id="e-notes" value="'+esc(t.notes||'')+'"></div>'
+    + '<div class="erow"><input type="text" id="e-sub" placeholder="Add a subtask…"><button class="btn ghost small" onclick="addSub(\''+t.id+'\')">+ Subtask</button></div>'
+    + '<div class="erow"><button class="btn" onclick="saveTask(\''+t.id+'\')">Save</button>'
+    + '<button class="btn ghost" onclick="toggleEdit(null)">Cancel</button>'
+    + '<button class="btn ghost" style="color:var(--red);border-color:var(--red)" onclick="delTask(\''+t.id+'\')">Delete task</button></div></div>';
+}
+function toggleEdit(id){ EDITING = (EDITING===id? null : id); render(); }
+function saveTask(id){
+  var box = document.querySelector('[data-edit="'+id+'"]'); if(!box) return;
+  var patch = { title: box.querySelector('#e-title').value.trim(),
+    task_date: box.querySelector('#e-date').value || null,
+    mode: box.querySelector('#e-mode').value,
+    priority: box.querySelector('#e-prio').value,
+    marker: box.querySelector('#e-marker').value,
+    notes: box.querySelector('#e-notes').value.trim() || null };
+  if(!patch.title) return;
+  sbPatch('tasks', id, patch).then(function(){ EDITING=null; flash('Saved'); load(); });
+}
+function delTask(id){ if(!confirm('Delete this task and its subtasks?')) return;
+  kidsOf(id).forEach(function(k){ sbDel('tasks', k.id); });
+  sbDel('tasks', id).then(function(){ EDITING=null; load(); });
+}
+function addSub(pid){
+  var box = document.querySelector('[data-edit="'+pid+'"]'); if(!box) return;
+  var inp = box.querySelector('#e-sub'); var v = inp.value.trim(); if(!v) return;
+  var parent = ALL.filter(function(t){ return t.id===pid; })[0] || {};
+  sbPost('tasks', {title:v, parent_id:pid, mode:parent.mode||'personal', task_date:parent.task_date||null, source:'suite'})
+    .then(function(){ load(); });
 }
 function toggleTask(cb){
   var row = cb.closest('.trow'); var id = row.getAttribute('data-id');

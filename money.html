@@ -147,11 +147,20 @@ a.module .go{color:var(--frog); font-size:12px; font-weight:700;}
 .wlegend b{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px;}
 footer{margin-top:34px; padding-top:16px; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
 .foot-sub{font-size:11px; color:var(--dim); margin-top:5px; font-family:var(--mono);}
+/* in-place editing (v5.3) */
+.ebtn{background:none; border:1px solid var(--line2); color:var(--muted); border-radius:7px; padding:2px 8px; font-size:11.5px; cursor:pointer; flex:none; font-family:inherit;}
+.ebtn:hover{color:var(--ink); border-color:var(--frog);}
+.editbox{margin:8px 0 4px; border:1px solid var(--line2); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:7px; background:var(--panel2);}
+.editbox label{font-size:10.5px; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; font-weight:700;}
+.editbox input,.editbox select,.editbox textarea{background:var(--input); border:1px solid var(--line); border-radius:8px; color:var(--ink); padding:7px 9px; font-size:13.5px; font-family:inherit; width:100%;}
+.erow{display:flex; gap:7px;} .erow>*{flex:1;}
+.wikih h3{font-size:16px; margin:18px 0 4px;} .wikih p,.wikih li{font-size:14px; color:var(--muted); line-height:1.6;}
+.wikih ul{padding-left:18px; margin:4px 0 10px;}
 </style>
 </head>
 <body>
 <div class="layout">
-<aside><div class="brand">Life<b>Suite</b></div><div class="sgroup">Modules</div><nav><a href="index.html">Homepage</a><a href="events.html">Events</a><a href="people.html">CRM</a><a href="health.html">Health &amp; Fitness</a><a href="vanity.html">Vanity</a><a href="admin.html">Admin</a><a href="money.html" class="on">Money</a><a href="fun.html">Fun &amp; Recreation</a><a href="data.html">Data governance</a></nav><div class="modebox" id="modeNow">Mode: <b>—</b></div></aside>
+<aside><div class="brand">Life<b>Suite</b></div><div class="sgroup">Modules</div><nav><a href="index.html">Homepage</a><a href="events.html">Events</a><a href="people.html">CRM</a><a href="health.html">Health &amp; Fitness</a><a href="vanity.html">Vanity</a><a href="admin.html">Admin</a><a href="money.html" class="on">Money</a><a href="fun.html">Fun &amp; Recreation</a><a href="data.html">Data governance</a><a href="wiki.html">Wiki</a></nav><div class="modebox" id="modeNow">Mode: <b>—</b></div></aside>
 <main>
 <div class="phead"><h1>Money</h1><span class="pill live">Live</span></div><p class="purpose">Modeled on Firefly III. Accounts work now; budgets, bills, and the rules engine switch on when the bank pipe connects — then there&#x27;s no manual entry at all.</p>
 <h2 class="sec">Net worth (from accounts below)</h2>
@@ -192,16 +201,34 @@ function todayStr(){ var n=new Date(); return dstr(new Date(n.getTime()-n.getTim
 </script>
 
 <script>
-var ACC=[];
+var ACC=[], AEDIT=null;
 function fmt(n){ return '$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2}); }
 function renderAcc(){
   var tot=ACC.reduce(function(s,a){ return s + (a.kind==='liability'? -Number(a.balance) : Number(a.balance)); },0);
   document.getElementById('networth').textContent = fmt(tot);
   document.getElementById('accounts').innerHTML = ACC.length? ACC.map(function(a){
-    return '<div class="lrow"><div class="lt"><b>'+esc(a.name)+'</b><small>'+esc(a.kind)+'</small></div>'
+    var kinds = ['asset','savings','credit','liability'].map(function(k){
+      return '<option value="'+k+'"'+(a.kind===k?' selected':'')+'>'+k+'</option>'; }).join('');
+    var row = '<div class="lrow"><div class="lt"><b>'+esc(a.name)+'</b><small>'+esc(a.kind)+'</small></div>'
       +'<span style="font-family:var(--mono)">'+fmt(a.balance)+'</span>'
+      +'<button class="ebtn" onclick="toggleAEdit(\''+a.id+'\')">Edit</button>'
       +'<button class="x" onclick="delAcc(\''+a.id+'\')">✕</button></div>';
+    if(AEDIT !== a.id) return row;
+    return row + '<div class="editbox" data-aedit="'+a.id+'">'
+      + '<div><label>Name</label><input type="text" id="ae-name" value="'+esc(a.name)+'"></div>'
+      + '<div class="erow"><div><label>Type</label><select id="ae-kind">'+kinds+'</select></div>'
+      + '<div><label>Balance</label><input type="number" step="0.01" id="ae-bal" value="'+a.balance+'"></div></div>'
+      + '<div class="erow"><button class="btn" onclick="saveAcc(\''+a.id+'\')">Save</button>'
+      + '<button class="btn ghost" onclick="toggleAEdit(null)">Cancel</button></div></div>';
   }).join('') : '<div class="empty">No accounts yet — add them below, or let the bank pipe fill this in later.</div>';
+}
+function toggleAEdit(id){ AEDIT = (AEDIT===id? null : id); renderAcc(); }
+function saveAcc(id){
+  var box = document.querySelector('[data-aedit="'+id+'"]'); if(!box) return;
+  var t = box.querySelector('#ae-name').value.trim(); if(!t) return;
+  sbPatch('accounts', id, {name:t, kind: box.querySelector('#ae-kind').value,
+    balance: Number(box.querySelector('#ae-bal').value||0)})
+    .then(function(){ AEDIT=null; loadAcc(); });
 }
 function delAcc(id){ sbDel('accounts', id).then(loadAcc); }
 function addAcc(){
