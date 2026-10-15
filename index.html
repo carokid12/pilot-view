@@ -5,24 +5,99 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Life Suite — Marina</title>
-<link rel="stylesheet" href="styles.css">
+<style>
+:root{
+  --bg:#0b0e11; --panel:#12161b; --panel2:#171c22; --line:#232a31; --line2:#2c353e;
+  --ink:#e9edf1; --muted:#8b94a0; --dim:#5d6672;
+  --frog:#2bd95c; --gold:#ffd700; --red:#ff4d5e; --amber:#ffb454; --blue:#4da3ff; --grey:#7d8590;
+  --radius:14px;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{color-scheme:dark;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg); color:var(--ink); padding:20px 16px 44px; max-width:880px; margin:0 auto;
+  -webkit-font-smoothing:antialiased;}
+.topbar{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;}
+.brand{font-size:12px; letter-spacing:.28em; text-transform:uppercase; color:var(--muted); font-weight:700;}
+.dateline{font-size:22px; font-weight:650; letter-spacing:-.01em; margin-top:5px;}
+.mode-pill{border:1px solid var(--line2); background:var(--panel2); color:var(--ink);
+  border-radius:999px; padding:7px 15px; font-size:12.5px; font-weight:650; cursor:pointer; letter-spacing:.04em;}
+.mode-pill.work{background:var(--blue); border-color:var(--blue); color:#06121f;}
+
+.hero{background:linear-gradient(160deg,#131a20,#0e1216); border:1px solid var(--line);
+  border-radius:18px; padding:22px 22px 18px; margin-bottom:12px; position:relative; overflow:hidden;}
+.hero:before{content:""; position:absolute; inset:0;
+  background:radial-gradient(420px 160px at 18% 0%, rgba(43,217,92,.14), transparent 65%);}
+.hero-label{font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:var(--muted); font-weight:700; position:relative;}
+.hero-row{display:flex; align-items:baseline; gap:12px; margin-top:6px; position:relative; flex-wrap:wrap;}
+.hero-num{font-family:var(--mono); font-size:56px; font-weight:700; letter-spacing:-.03em; line-height:1;}
+.hero-unit{font-size:16px; color:var(--muted);}
+.hero-sub{font-family:var(--mono); font-size:12px; color:var(--dim); margin:10px 0 14px; position:relative;}
+.hero-bar{height:6px; background:#232a31; border-radius:99px; overflow:hidden; position:relative;}
+.hero-fill{height:100%; width:0%; border-radius:99px;
+  background:linear-gradient(90deg,#128a34,var(--frog)); transition:width .8s ease;}
+
+.summary{display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:4px;}
+.tile{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:12px 4px 10px; text-align:center;}
+.tile b{display:block; font-family:var(--mono); font-size:22px; font-weight:700;}
+.tile span{display:block; margin-top:3px; font-size:9.5px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted);}
+.tile.needs b{color:var(--red);} .tile.active b{color:var(--amber);}
+.tile.on b{color:var(--frog);} .tile.wait b{color:var(--blue);} .tile.stale b{color:var(--grey);}
+
+section{margin-top:26px;}
+h2{font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:11px;}
+h2 .count{color:var(--dim); letter-spacing:.05em;}
+.cards{display:grid; grid-template-columns:1fr; gap:8px;}
+@media(min-width:640px){ .cards{grid-template-columns:1fr 1fr;} }
+.card{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--line2);
+  border-radius:12px; padding:13px 15px;}
+.card h3{font-size:14.5px; font-weight:620; letter-spacing:-.005em;}
+.card p{font-size:13px; color:var(--muted); line-height:1.5; margin-top:3px;}
+.card .status{display:inline-block; font-size:10px; font-weight:700; letter-spacing:.09em;
+  text-transform:uppercase; margin-top:9px; padding:3px 9px; border-radius:99px; border:1px solid var(--line2); color:var(--muted);}
+.card.s-needs-you{border-left-color:var(--red);} .card.s-needs-you .status{color:var(--red); border-color:rgba(255,77,94,.4);}
+.card.s-active{border-left-color:var(--amber);} .card.s-active .status{color:var(--amber); border-color:rgba(255,180,84,.4);}
+.card.s-on-track{border-left-color:var(--frog);} .card.s-on-track .status{color:var(--frog); border-color:rgba(43,217,92,.35);}
+.card.s-waiting{border-left-color:var(--blue);} .card.s-waiting .status{color:var(--blue); border-color:rgba(77,163,255,.4);}
+.card.s-stale{border-left-color:var(--grey);} .card.s-stale .status{color:var(--grey);}
+.card.s-done{border-left-color:var(--line2); opacity:.75;}
+
+.modules{display:grid; grid-template-columns:1fr; gap:8px;}
+@media(min-width:640px){ .modules{grid-template-columns:1fr 1fr;} }
+.module{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:13px 15px;}
+.module h3{font-size:14.5px; font-weight:620; display:flex; justify-content:space-between; align-items:center; gap:8px;}
+.module p{font-size:13px; color:var(--muted); line-height:1.5; margin-top:3px;}
+.pill{font-size:9.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  padding:3px 9px; border-radius:99px; border:1px solid var(--line2); color:var(--dim); white-space:nowrap;}
+.pill.building{color:var(--amber); border-color:rgba(255,180,84,.45);}
+.pill.live{color:var(--frog); border-color:rgba(43,217,92,.4);}
+.pill.retained{color:var(--blue); border-color:rgba(77,163,255,.4);}
+
+details{margin-top:26px;}
+details summary{font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--muted);
+  font-weight:700; cursor:pointer; margin-bottom:11px;}
+footer{margin-top:36px; padding-top:16px; border-top:1px solid var(--line); text-align:center; color:var(--muted); font-size:13px;}
+.foot-sub{font-size:11px; color:var(--dim); margin-top:5px; font-family:var(--mono);}
+</style>
 </head>
 <body>
 <header class="topbar">
   <div>
-    <h1>Life Suite</h1>
-    <p class="dateline" id="dateline">—</p>
+    <div class="brand">Life Suite</div>
+    <div class="dateline" id="dateline">—</div>
   </div>
   <button class="mode-pill" id="modeToggle" title="Toggle mode">Personal</button>
 </header>
 
-<section class="weeks-band">
-  <div class="weeks-main">
-    <span class="weeks-num" id="weeksLeft">—</span>
-    <span class="weeks-label">weeks left</span>
+<section class="hero">
+  <div class="hero-label">Weeks Left</div>
+  <div class="hero-row">
+    <span class="hero-num" id="weeksLeft">—</span>
+    <span class="hero-unit">weeks to live it</span>
   </div>
-  <div class="weeks-sub" id="weeksSub">—</div>
-  <div class="weeks-bar"><div class="weeks-fill" id="weeksFill"></div></div>
+  <div class="hero-sub" id="weeksSub">—</div>
+  <div class="hero-bar"><div class="hero-fill" id="weeksFill"></div></div>
 </section>
 
 <section class="summary" id="summary"></section>
@@ -61,9 +136,137 @@
 
 <footer>
   <p>Principle: autopilot, not busywork — the system manages; Marina lives.</p>
-  <p class="foot-sub">Life Suite · marinacarosella.com · <span id="updated"></span></p>
+  <p class="foot-sub">LIFE SUITE · MARINACAROSELLA.COM · <span id="updated">—</span></p>
 </footer>
 
-<script src="app.js"></script>
+<script>
+// Life Suite homepage v3 — dark cockpit, single-file build (styles + scripts inline).
+// ---------- Weeks Left (born Feb 1995, planning horizon age 80) ----------
+(function () {
+  var birth = new Date(1995, 1, 15);           // mid-Feb 1995 (exact day declined; precise enough)
+  var eighty = new Date(2075, 1, 15);
+  var now = new Date();
+  var weekMs = 7 * 24 * 3600 * 1000;
+  var total = Math.round((eighty - birth) / weekMs);
+  var lived = Math.floor((now - birth) / weekMs);
+  var left = total - lived;
+  document.getElementById('weeksLeft').textContent = left.toLocaleString('en-US');
+  document.getElementById('weeksSub').textContent =
+    lived.toLocaleString('en-US') + ' LIVED · ' + total.toLocaleString('en-US') + ' TOTAL · TO AGE 80';
+  document.getElementById('weeksFill').style.width = (100 * lived / total).toFixed(1) + '%';
+})();
+
+// ---------- Dateline + mode pill ----------
+(function () {
+  var now = new Date();
+  document.getElementById('dateline').textContent =
+    now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  var btn = document.getElementById('modeToggle');
+  var hour = now.getHours(), day = now.getDay();
+  setMode(day >= 1 && day <= 5 && hour >= 8 && hour < 17 ? 'Work' : 'Personal');
+  btn.addEventListener('click', function () { setMode(btn.textContent === 'Work' ? 'Personal' : 'Work'); });
+  function setMode(m) { btn.textContent = m; btn.classList.toggle('work', m === 'Work'); }
+})();
+
+// ---------- Module map ----------
+var MODULES = [
+  { name: 'Tasks', tag: 'Building', cls: 'building',
+    desc: 'Your Tweek, rebuilt natively — week view, frog/gold priorities, subtasks as reminders. Phase 1, in progress.' },
+  { name: 'CRM — People', tag: 'Planned', cls: '',
+    desc: 'People Queue (who to text, from your message history), birthday → gift pipeline, Monica-style person profiles.' },
+  { name: 'Health & Fitness', tag: 'Planned', cls: '',
+    desc: 'Journal, health cadence and appointments, meal planning under 1,600 cal, weekly check-in. Sleep waits on a wearable you will actually wear.' },
+  { name: 'Admin', tag: 'Planned', cls: '',
+    desc: 'Chore routines, inventory with reorder points, deliveries, returns and errands queues.' },
+  { name: 'Buying & Consume', tag: 'Planned', cls: '',
+    desc: 'The buying agent dump spot, grocery and To Buy lists, and your mymind saves flowing into one inbox.' },
+  { name: 'Money', tag: 'Planned', cls: '',
+    desc: 'Firefly III model: budgets, piggy banks, bills matched when paid, rules that categorize automatically from your bank feed.' },
+  { name: 'What Should I Do?', tag: 'Retained', cls: 'retained',
+    desc: 'Your activity picker (46 activities, 6 categories) — source copied from Netlify, rebuilds inside Fun & Recreation.' },
+  { name: 'COCKPIT', tag: 'Live (lite)', cls: 'live',
+    desc: 'Integration health and automations running — the Running Systems section above is its first version.' }
+];
+(function () {
+  var wrap = document.getElementById('modules');
+  MODULES.forEach(function (m) {
+    var d = document.createElement('div');
+    d.className = 'module';
+    d.innerHTML = '<h3>' + m.name + ' <span class="pill ' + m.cls + '">' + m.tag + '</span></h3><p>' + m.desc + '</p>';
+    wrap.appendChild(d);
+  });
+})();
+
+// ---------- Status cards ----------
+// Snapshot fallback (2026-10-15) so the page is complete even if data.json fails;
+// live data.json replaces it when the fetch succeeds.
+var FALLBACK = {"updated_at":"2026-10-15T09:50:00-04:00","items":[
+{"area":"Today","detail":"Today's frog. Not done yet.","id":"ikea-frog","status":"needs_you","title":"IKEA order — blackout curtains"},
+{"area":"Tracking","detail":"Checkout staged, awaiting her approval to pay.","id":"john-henric-bag","status":"needs_you","title":"John Henric Black Laptop Bag ($279)"},
+{"area":"Tracking","detail":"Waiting for her decision on unread financial threads.","id":"inbox-1000","status":"needs_you","title":"Inbox cleanup — 1,000 financial threads"},
+{"area":"Systems","detail":"Both running every 10 min. 58 personal, 41 work mappings live.","id":"mirrors","status":"on_track","title":"Tweek↔Dynalist mirrors"},
+{"area":"Systems","detail":"Every 30 min. Forwards .ics to Google Calendar.","id":"invite-import","status":"on_track","title":"Work invite auto-import"},
+{"area":"Systems","detail":"Running daily.","id":"inbox-cleanups","status":"on_track","title":"Inbox cleanups (10 AM + 7 PM)"},
+{"area":"Systems","detail":"Delivered daily.","id":"briefing","status":"on_track","title":"Morning briefing (7:30 AM)"},
+{"area":"Systems","detail":"Delivered daily.","id":"be-kind","status":"on_track","title":"Be-kind-at-work (8 AM)"},
+{"area":"Systems","detail":"Delivered nightly.","id":"journal-prompt","status":"on_track","title":"Journal prompt (8 PM)"},
+{"area":"Systems","detail":"Delivered nightly.","id":"eod-review","status":"on_track","title":"End-of-day review (8:30 PM)"},
+{"area":"Systems","detail":"Daily. Phone was offline last 2 runs.","id":"iphone-triage","status":"on_track","title":"iPhone reminders triage (6 AM)"},
+{"area":"Upcoming","detail":"Both flights booked. SY1908 out, Southwest back (BFNTO6).","id":"minneapolis","status":"on_track","title":"Minneapolis trip Nov 6–9"},
+{"area":"Upcoming","detail":"Autopay via ACH.","id":"rent-nov","status":"on_track","title":"Rent $1,750 — Nov 1"},
+{"area":"Upcoming","detail":"On Reminder Notifications calendar with email alerts.","id":"birthdays","status":"on_track","title":"Birthday reminders (26 events)"},
+{"area":"Upcoming","detail":"Reminder set for Aug 1, 2027.","id":"complexcon","status":"waiting","title":"ComplexCon 2027 tickets"},
+{"area":"Upcoming","detail":"Movie + cast iron skillet. She's driving.","id":"camille-oct18","status":"on_track","title":"Camille over — Sun Oct 18"},
+{"area":"Closed","detail":"Delivered Oct 14.","id":"biolage","status":"done","title":"Biolage conditioner 2-pack"}
+]};
+(function () {
+  render(FALLBACK);
+  fetch('data.json', { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(function (data) { clearAll(); render(data); })
+    .catch(function () { /* fallback already rendered */ });
+
+  function clearAll() {
+    ['sec-needs','sec-active','sec-running','sec-upcoming','sec-closed','summary'].forEach(function (id) {
+      document.getElementById(id).innerHTML = '';
+    });
+  }
+  function render(data) {
+    var LABEL = { needs_you: 'Needs you', active: 'Active', on_track: 'On track',
+                  waiting: 'Waiting', stale: 'Stale', done: 'Done' };
+    var items = data.items || [];
+    var counts = { needs_you: 0, active: 0, on_track: 0, waiting: 0, stale: 0 };
+    items.forEach(function (it) { if (counts[it.status] !== undefined) counts[it.status]++; });
+    section('sec-needs', 'count-needs', items.filter(function (i) { return i.status === 'needs_you'; }));
+    section('sec-active', 'count-active', items.filter(function (i) { return i.area === 'Tracking' && i.status !== 'needs_you'; }));
+    section('sec-running', 'count-running', items.filter(function (i) { return i.area === 'Systems'; }));
+    section('sec-upcoming', 'count-upcoming', items.filter(function (i) { return i.area === 'Upcoming'; }));
+    section('sec-closed', 'count-closed', items.filter(function (i) { return i.area === 'Closed' || i.status === 'done'; }));
+    document.getElementById('summary').innerHTML =
+      tile(counts.needs_you, 'Needs you', 'needs') + tile(counts.active, 'Active', 'active') +
+      tile(counts.on_track, 'On track', 'on') + tile(counts.waiting, 'Waiting', 'wait') +
+      tile(counts.stale, 'Stale', 'stale');
+    if (data.updated_at) {
+      document.getElementById('updated').textContent =
+        'STATUS ' + new Date(data.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+    }
+    function section(secId, countId, list) {
+      var el = document.getElementById(secId);
+      var cEl = document.getElementById(countId);
+      if (cEl) cEl.textContent = '(' + list.length + ')';
+      list.forEach(function (it) {
+        var d = document.createElement('div');
+        d.className = 'card s-' + it.status.replace('_', '-');
+        d.innerHTML = '<h3>' + it.title + '</h3><p>' + (it.detail || '') + '</p>' +
+          '<span class="status">' + (LABEL[it.status] || it.status) + '</span>';
+        el.appendChild(d);
+      });
+    }
+    function tile(n, label, cls) {
+      return '<div class="tile ' + cls + '"><b>' + n + '</b><span>' + label + '</span></div>';
+    }
+  }
+})();
+</script>
 </body>
 </html>
