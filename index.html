@@ -151,7 +151,7 @@ footer{margin-top:34px; padding-top:16px; border-top:1px solid var(--line); colo
 </head>
 <body>
 <div class="layout">
-<aside><div class="brand">Life<b>Suite</b></div><nav><a href="index.html" class="on">Homepage</a><a href="today.html">Today</a><a href="calendar.html">Calendar</a><a href="tasks.html">Tasks</a></nav><div class="sgroup">Admin</div><nav><a href="admin.html">Admin</a><a href="buying.html">Buying &amp; Consume</a><a href="notebook.html">Notebook</a></nav><div class="sgroup">Finance</div><nav><a href="money.html">Money</a></nav><div class="sgroup">Health</div><nav><a href="health.html">Health &amp; Fitness</a><a href="journal.html">Journal</a><a href="meals.html">Meals</a></nav><div class="sgroup">Life</div><nav><a href="people.html">People</a><a href="goals.html">Goals</a><a href="fun.html">Fun &amp; Recreation</a><a href="weeks.html">Weeks</a></nav><div class="sgroup">System</div><nav><a href="cockpit.html">COCKPIT</a></nav><div class="modebox" id="modeNow">Mode: <b>—</b></div></aside>
+<aside><div class="brand">Life<b>Suite</b></div><div class="sgroup">Modules</div><nav><a href="index.html" class="on">Homepage</a><a href="events.html">Events</a><a href="people.html">CRM</a><a href="health.html">Health &amp; Fitness</a><a href="vanity.html">Vanity</a><a href="admin.html">Admin</a><a href="money.html">Money</a><a href="fun.html">Fun &amp; Recreation</a><a href="data.html">Data governance</a></nav><div class="modebox" id="modeNow">Mode: <b>—</b></div></aside>
 <main>
 
 <div class="dateline" id="dateline">—</div>
@@ -160,22 +160,35 @@ footer{margin-top:34px; padding-top:16px; border-top:1px solid var(--line); colo
   <div class="hero-row"><span class="hero-num" id="weeksLeft">—</span><span class="hero-unit">weeks to live it</span></div>
   <div class="hero-sub" id="weeksSub">—</div>
   <div class="hero-bar"><div class="hero-fill" id="weeksFill"></div></div>
+  <p style="position:relative;margin-top:10px"><a href="weeks.html" style="color:var(--frog);font-size:12.5px;font-weight:700;text-decoration:none">See your life in weeks →</a></p>
 </section>
-<section class="summary" id="summary"></section>
-<h2 class="sec">Today &amp; overdue — tap to check off <span class="count" id="count-today"></span></h2>
+<h2 class="sec">Today in a nutshell</h2>
+<div class="block"><ul>
+  <li id="weatherLine">Weather — Ferndale, MI (fed by the morning briefing)</li>
+  <li id="nutshellCount">Loading today's reminders…</li>
+</ul></div>
+<h2 class="sec">To Do</h2>
 <div class="addrow" style="margin:0 0 10px">
   <input type="text" id="homeNew" placeholder="Add a task for today…">
   <button class="btn" onclick="addHomeTask()">Add</button>
+  <a href="tasks.html" class="btn ghost" style="text-decoration:none">Open Tasks →</a>
 </div>
-<div id="todayTasks"></div>
-<h2 class="sec">Needs Attention <span class="count" id="count-needs"></span></h2>
-<div class="cards" id="sec-needs"></div>
-<h2 class="sec">COCKPIT — Running Systems <span class="count" id="count-running"></span></h2>
-<div class="cards" id="sec-running"></div>
-<h2 class="sec">Modules — tap to open</h2>
-<div class="modules" id="modules"></div>
-<h2 class="sec">Upcoming <span class="count" id="count-upcoming"></span></h2>
-<div class="cards" id="sec-upcoming"></div>
+<div id="todoList"></div>
+<h2 class="sec">Email — needs action</h2>
+<div class="cards" id="emailFlags"></div>
+<h2 class="sec">Life reminders</h2>
+<div class="cards" id="lifeReminders"></div>
+<h2 class="sec">Event suggestions — upcoming</h2>
+<div class="cards" id="eventSuggestions"></div>
+<h2 class="sec">Upcoming items of note</h2>
+<div class="cards" id="itemsOfNote"></div>
+<h2 class="sec">Grocery dash</h2>
+<div id="groceryDash"></div>
+<p style="margin-top:8px"><a href="buying.html" style="color:var(--frog);font-size:13px;font-weight:700;text-decoration:none">Full lists on Admin → Buying</a></p>
+<h2 class="sec">Notifications — insights</h2>
+<div class="cards" id="insights"></div>
+<h2 class="sec">Shipping status</h2>
+<div class="cards" id="shipping"></div>
 
 <footer>
   <p>Principle: autopilot, not busywork — the system manages; Marina lives.</p>
@@ -213,12 +226,6 @@ function todayStr(){ var n=new Date(); return dstr(new Date(n.getTime()-n.getTim
 })();
 function prioIcon(t){ if(t.priority==='frog') return '\uD83D\uDC38 '; if(t.priority==='gold') return '\u2B50 '; return ''; }
 function dotHtml(t){ if(t.marker && t.marker!=='none') return '<span class="dot '+t.marker+'"></span>'; return ''; }
-function trowHtml(t){
-  return '<div class="trow'+(t.done?' done':'')+'" data-id="'+t.id+'">'
-    + '<input type="checkbox" '+(t.done?'checked':'')+' onchange="toggleHome(this)">'
-    + '<div class="tt">'+dotHtml(t)+prioIcon(t)+esc(t.title)+'</div>'
-    + '<span class="tag">'+t.mode+'</span></div>';
-}
 function toggleHome(cb){ var row=cb.closest('.trow');
   sbPatch('tasks', row.getAttribute('data-id'), {done: cb.checked, done_at: cb.checked? new Date().toISOString(): null})
   .then(function(){ row.classList.toggle('done', cb.checked); });
@@ -226,52 +233,48 @@ function toggleHome(cb){ var row=cb.closest('.trow');
 function addHomeTask(){
   var inp=document.getElementById('homeNew'); var v=inp.value.trim(); if(!v) return;
   sbPost('tasks',{title:v, task_date: todayStr(), mode:'personal', source:'suite'})
-  .then(function(){ inp.value=''; loadToday(); });
+  .then(function(){ inp.value=''; loadHome(); });
 }
-function loadToday(){
+function taskRow(t){
+  return '<div class="trow'+(t.done?' done':'')+'" data-id="'+t.id+'">'
+    + '<input type="checkbox" '+(t.done?'checked':'')+' onchange="toggleHome(this)">'
+    + '<div class="tt">'+dotHtml(t)+prioIcon(t)+esc(t.title)+'</div>'
+    + '<span class="tag">'+t.mode+'</span></div>';
+}
+function loadHome(){
   var t = todayStr();
   sbGet('tasks','select=*&parent_id=is.null&done=eq.false&or=(task_date.eq.'+t+',task_date.lt.'+t+')&order=task_date.asc&limit=100')
   .then(function(rows){
-    rows = (rows||[]).filter(function(x){ return !x.is_template; });
+    rows=(rows||[]).filter(function(x){ return !x.is_template; });
     rows.sort(function(a,b){ var pa=a.priority==='frog'?0:a.priority==='gold'?1:2, pb=b.priority==='frog'?0:b.priority==='gold'?1:2; return pa-pb; });
-    document.getElementById('todayTasks').innerHTML = rows.length? rows.map(trowHtml).join('') : '<div class="empty">Nothing open for today</div>';
-    document.getElementById('count-today').textContent = '('+rows.length+')';
+    document.getElementById('todoList').innerHTML = rows.length? rows.map(taskRow).join('') : '<div class="empty">Nothing open — enjoy it</div>';
+    document.getElementById('nutshellCount').textContent = rows.length + ' open item' + (rows.length===1?'':'s') + ' today & overdue';
+  });
+  sbGet('buy_items','select=*&kind=eq.grocery&done=eq.false&order=created_at.asc&limit=6')
+  .then(function(rows){
+    document.getElementById('groceryDash').innerHTML = (rows&&rows.length)? rows.map(function(i){
+      return '<div class="lrow"><div class="lt">'+esc(i.text)+'</div></div>';
+    }).join('') : '<div class="empty">Grocery list is empty</div>';
   });
 }
-loadToday(); setInterval(loadToday, 60000);
+loadHome(); setInterval(loadHome, 60000);
 (function(){
-  var LABEL={needs_you:'Needs you',active:'Active',on_track:'On track',waiting:'Waiting',stale:'Stale',done:'Done'};
   fetch('data.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(data){
-    var items=data.items||[]; var counts={needs_you:0,active:0,on_track:0,waiting:0,stale:0};
-    items.forEach(function(it){ if(counts[it.status]!==undefined) counts[it.status]++; });
-    function section(secId,countId,list){ var el=document.getElementById(secId); var c=document.getElementById(countId);
-      if(c) c.textContent='('+list.length+')';
-      list.forEach(function(it){ var d=document.createElement('div'); d.className='card s-'+it.status.replace('_','-');
-        d.innerHTML='<h3>'+it.title+'</h3><p>'+(it.detail||'')+'</p><span class="status">'+(LABEL[it.status]||it.status)+'</span>';
-        el.appendChild(d); }); }
-    section('sec-needs','count-needs',items.filter(function(i){return i.status==='needs_you';}));
-    section('sec-running','count-running',items.filter(function(i){return i.area==='Systems';}));
-    section('sec-upcoming','count-upcoming',items.filter(function(i){return i.area==='Upcoming';}));
-    function tile(n,l,c){ return '<div class="tile '+c+'"><b>'+n+'</b><span>'+l+'</span></div>'; }
-    document.getElementById('summary').innerHTML=tile(counts.needs_you,'Needs you','needs')+tile(counts.active,'Active','active')+tile(counts.on_track,'On track','on')+tile(counts.waiting,'Waiting','wait')+tile(counts.stale,'Stale','stale');
+    var items=data.items||[];
+    function fill(elId, list, emptyMsg){
+      var el=document.getElementById(elId); if(!el) return;
+      el.innerHTML = list.length? list.map(function(it){
+        return '<div class="card s-'+it.status.replace('_','-')+'"><h3>'+it.title+'</h3><p>'+(it.detail||'')+'</p></div>';
+      }).join('') : '<div class="empty">'+emptyMsg+'</div>';
+    }
+    fill('lifeReminders', items.filter(function(i){ return i.area==='Today'; }), 'Nothing flagged today');
+    fill('eventSuggestions', items.filter(function(i){ return i.area==='Upcoming'; }), 'Nothing coming up');
+    fill('itemsOfNote', items.filter(function(i){ return i.area==='Tracking'; }), 'Nothing being tracked');
+    fill('emailFlags', items.filter(function(i){ return i.area==='Email'; }), 'No email needs you right now');
+    fill('insights', items.filter(function(i){ return i.area==='Insights'; }), 'Nothing new — the system is watching');
+    fill('shipping', items.filter(function(i){ return i.area==='Shipping'; }), 'Nothing in transit');
+    if(data.weather){ document.getElementById('weatherLine').textContent = data.weather; }
   }).catch(function(){});
-})();
-var MODULES=[
- {href:'tasks.html',name:'Tasks',tag:'Live',cls:'live',desc:'Your week, frog first — check off right here. Tweek data imported.'},
- {href:'people.html',name:'People — CRM',tag:'Live',cls:'live',desc:'Your people and when you last talked. The texting queue fills in from message history.'},
- {href:'health.html',name:'Health & Fitness',tag:'Structure',cls:'',desc:'Mental, physical, fitness, sleep — cadence and decisions.'},
- {href:'admin.html',name:'Admin',tag:'Live',cls:'live',desc:'Household inventory with reorder points, plus your routines.'},
- {href:'buying.html',name:'Buying & Consume',tag:'Live',cls:'live',desc:'To Buy and grocery lists that work. mymind inbox lands here next.'},
- {href:'money.html',name:'Money',tag:'Live',cls:'live',desc:'Accounts in one place. Budgets and rules follow the bank pipe.'},
- {href:'fun.html',name:'Fun & Recreation',tag:'Live app inside',cls:'live',desc:'Your working activity picker, plus the ideas list.'},
- {href:'journal.html',name:'Journal',tag:'Live',cls:'live',desc:'Write or dictate; entries save here.'},
- {href:'meals.html',name:'Meals',tag:'Live',cls:'live',desc:'The week planned, calories totaled against 1,600 a day.'},
- {href:'cockpit.html',name:'COCKPIT',tag:'Live (lite)',cls:'live',desc:'System health — database counts live, automations listed.'}
-];
-(function(){ var wrap=document.getElementById('modules');
-  MODULES.forEach(function(m){ var a=document.createElement('a'); a.className='module'; a.href=m.href;
-    a.innerHTML='<h3>'+m.name+' <span class="pill '+m.cls+'">'+m.tag+'</span></h3><p>'+m.desc+'</p><p class="go">Open →</p>';
-    wrap.appendChild(a); });
 })();
 </script>
 
